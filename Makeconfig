@@ -413,7 +413,7 @@ ifndef +link-static
 	      $(+preinit) $(+prectorT) \
 	      $(filter-out $(addprefix $(csu-objpfx),start.o \
 						     $(start-installed-name))\
-			   $(+preinit) $(link-extra-libs-static) \
+			   $(+preinit) $(link-extra-libs-static) `nds32le-linux-gcc --print-file-name=libgcc.a` \
 			   $(common-objpfx)libc% $(+postinit),$^) \
 	      $(link-extra-libs-static)
 +link-static-after-libc = $(+postctorT) $(+postinit)
@@ -507,8 +507,8 @@ link-extra-libs-static = $(link-extra-libs)
 endif
 
 # The static libraries.
-link-libc-static = -Wl,--start-group $(common-objpfx)libc.a $(static-gnulib) -Wl,--end-group
-link-libc-static-tests = -Wl,--start-group $(common-objpfx)libc.a $(static-gnulib-tests) -Wl,--end-group
+link-libc-static = -Wl,--start-group $(common-objpfx)libc.a $(static-gnulib) `nds32le-linux-gcc --print-file-name=libgcc.a` -Wl,--end-group
+link-libc-static-tests = -Wl,--start-group $(common-objpfx)libc.a $(static-gnulib-tests) `nds32le-linux-gcc --print-file-name=libgcc.a` -Wl,--end-group
 
 # How to link against libgcc.  Some libgcc functions, such as those
 # for "long long" arithmetic or software floating point, can always be
