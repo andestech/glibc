@@ -845,6 +845,10 @@ case $basic_machine in
 		basic_machine=i486-ncr
 		os=-sysv4
 		;;
+	nds32*)
+		basic_machine=nds32-unknown
+		os=-linux
+		;;
 	netbsd386)
 		basic_machine=i386-unknown
 		os=-netbsd
