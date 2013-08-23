@@ -10,6 +10,7 @@ libc {
     gnu_get_libc_release; gnu_get_libc_version;
   }
   GLIBC_PRIVATE {
-    errno;
+#    errno;
+     __emutls_v.errno; __emutls_v.h_errno;
   }
 }
