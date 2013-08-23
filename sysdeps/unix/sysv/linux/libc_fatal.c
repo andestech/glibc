@@ -24,6 +24,10 @@
 #include <sys/mman.h>
 #include <sys/uio.h>
 
+#ifndef bool
+#define bool int
+#endif
+
 static bool
 writev_for_fatal (int fd, const struct iovec *iov, size_t niov, size_t total)
 {
