@@ -405,6 +405,10 @@ $(objpfx)ldd: ldd.bash.in $(common-objpfx)soversions.mk \
 	chmod 555 $@.new
 	mv -f $@.new $@
 
+# for sprof
+$(libdl):
+	ln -b -s $(common-objpfx)dlfcn/libdl.so $(libdl)
+
 $(objpfx)sprof: $(libdl)
 
 $(objpfx)sln: $(sln-modules:%=$(objpfx)%.o)
