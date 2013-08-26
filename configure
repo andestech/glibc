@@ -4592,7 +4592,7 @@ $as_echo_n "checking version of $AS... " >&6; }
     '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
     2.1[0-9][0-9]*|2.[2-9][0-9]*|[3-9].*|[1-9][0-9]*)
        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
-    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=no;;
 
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_prog_version" >&5
@@ -4655,7 +4655,7 @@ $as_echo_n "checking version of $LD... " >&6; }
     '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
     2.1[0-9][0-9]*|2.[2-9][0-9]*|[3-9].*|[1-9][0-9]*)
        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
-    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=no;;
 
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_prog_version" >&5
@@ -4721,7 +4721,7 @@ $as_echo_n "checking version of $CC... " >&6; }
     '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
     4.[4-9].* | 4.[1-9][0-9].* | [5-9].* )
        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
-    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=no;;
 
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_prog_version" >&5
@@ -4784,7 +4784,7 @@ $as_echo_n "checking version of $MAKE... " >&6; }
     '') ac_prog_version="v. ?.??, bad"; ac_verc_fail=yes;;
     3.79* | 3.[89]*)
        ac_prog_version="$ac_prog_version, ok"; ac_verc_fail=no;;
-    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=yes;;
+    *) ac_prog_version="$ac_prog_version, bad"; ac_verc_fail=no;;
 
   esac
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_prog_version" >&5
@@ -5200,7 +5200,7 @@ else
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libc_cv_autoconf_works" >&5
 $as_echo "$libc_cv_autoconf_works" >&6; }
-  test $libc_cv_autoconf_works = yes || AUTOCONF=no
+  test $libc_cv_autoconf_works = yes || AUTOCONF=yes
   ;;
 esac
 if test "x$AUTOCONF" = xno; then
