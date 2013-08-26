@@ -3773,6 +3773,14 @@ case "$machine-$host_os" in
     ;;
 esac
 
+# NDS32
+if test "$machine" = nds32le; then
+   machine="nds32"
+fi
+if test "$machine" = nds32be; then
+   machine="nds32"
+fi
+
 submachine=
 
 # Check whether --with-cpu was given.
