@@ -43,7 +43,6 @@ struct sigcontext{
         unsigned long nds32_d1hi;
         unsigned long nds32_d0lo;
         unsigned long nds32_d0hi;
-        unsigned long nds32_ipsw;
         unsigned long nds32_ipc;
         unsigned long fault_address;
 };
