@@ -26,7 +26,6 @@
 #include <kernel-features.h>
 
 .text
-#ifdef __ASSUME_MMAP2_SYSCALL
 
 .globl __mmap
 ENTRY (__mmap)
@@ -78,13 +77,7 @@ ENTRY (__mmap)
 	j SYSCALL_ERROR
 #endif
 
-
 ret
-#else /* ! __ASSUME_MMAP2_SYSCALL  */
-
-PSEUDO (__mmap, mmap, dummy)
-ret
-#endif /* ! __ASSUME_MMAP2_SYSCALL  */
 
 PSEUDO_END (__mmap)
 
