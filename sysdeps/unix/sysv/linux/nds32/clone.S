@@ -70,6 +70,7 @@ ENTRY(__clone)
 	bltz	$r0, 5b
 
 	! parent
+	swi     $r0, [$r4]                      ! Store child tid to pd->tid.
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
 	popm	$fp, $gp, $sp
@@ -77,9 +78,13 @@ ENTRY(__clone)
 	ret
 
 4:
+
 	/* Only in child's stack.  */
 	pop	$r1				! fn
 	pop	$r0				! arg
+
+	move    $r25, $r3
+	addi    $r25, $r25, 0x490               ! TLS_TCB_OFFSET + TLS_PRE_TCB_SIZE
 
 #if !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP__)
 	addi	$sp, $sp, -24
