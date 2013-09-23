@@ -2,6 +2,7 @@
 #define _LINUX_NDS32_SYSDEP_H 1
 
 #include <sysdeps/unix/nds32/sysdep.h>
+#include <tls.h>
 
 #define        LIB_SYSCALL     0x7fff
 
