@@ -1,7 +1,6 @@
 #ifndef _NDS32_BITS_ATOMIC_H
 #define _NDS32_BITS_ATOMIC_H
 
-
 #include <stdint.h>
 
 typedef int8_t atomic8_t;
@@ -31,7 +30,7 @@ typedef uintmax_t uatomic_max_t;
 
 
 #ifndef atomic_full_barrier
-# define atomic_full_barrier() __asm ("" ::: "memory")
+# define atomic_full_barrier() __asm ("dsb" ::: "memory")
 #endif
 
 #ifndef atomic_read_barrier
@@ -42,25 +41,65 @@ typedef uintmax_t uatomic_max_t;
 # define atomic_write_barrier() atomic_full_barrier ()
 #endif
 
-/* We have by default no support for atomic operations.  So define
-   them non-atomic.  If this is a problem somebody will have to come
-   up with real definitions.  */
+#define atomic_exchange_acq(mem, newval)                    \
+  ({   unsigned long val, offset, temp;                     \
+                                                            \
+       asm volatile (                                       \
+               "move   %2, %4\n\t"                          \
+               "move   %1, #0x0\n\t"                        \
+               "1:\n\t"                                     \
+               "llw    %0, [%3 + %1 << 0]\n\t"              \
+               "move   %2, %4\n\t"                          \
+               "scw    %2, [%3 + %1 << 0]\n\t"              \
+               "beqz   %2, 1b\n\t"                          \
+               : "=&r" (val), "=&r" (offset), "=&r" (temp)  \
+               : "r" (mem), "r" (newval)                    \
+               : "memory" );                                \
+       val; })
 
-/* The only basic operation needed is compare and exchange.  */
-#define atomic_compare_and_exchange_val_acq(mem, newval, oldval) \
-  ({ __typeof (mem) __gmemp = (mem);                                  \
-     __typeof (*mem) __gret = *__gmemp;                               \
-     __typeof (*mem) __gnewval = (newval);                            \
-                                                                      \
-     if (__gret == (oldval))                                          \
-       *__gmemp = __gnewval;                                          \
-     __gret; })
+#define atomic_compare_and_exchange_val_acq(mem, newval, oldval)  \
+  ({   unsigned long val, offset, temp;                     \
+                                                            \
+       asm volatile (                                       \
+               "move   %1, #0x0\n\t"                        \
+               "move   %2, %4\n\t"                          \
+               "1:\n\t"                                     \
+               "llw    %0, [%3 + %1 << 0]\n\t"              \
+               "bne    %0, %5, 2f\n\t"                      \
+               "move   %2, %4\n\t"                          \
+               "scw    %2, [%3 + %1 << 0]\n\t"              \
+               "beqz   %2, 1b\n\t"                          \
+               "j      3f\n\t"                              \
+               "2:\n\t"                                     \
+               "move   %2, %0\n\t"                          \
+               "scw    %2, [%3 + %1 << 0]\n\t"              \
+               "3:\n\t"                                     \
+               : "=&r" (val), "=&r" (offset), "=&r" (temp)  \
+               : "r" (mem), "r" (newval), "r" (oldval)      \
+               : "memory" ); \
+       val; })
 
 #define atomic_compare_and_exchange_bool_acq(mem, newval, oldval) \
-  ({ __typeof (mem) __gmemp = (mem);                                  \
-     __typeof (*mem) __gnewval = (newval);                            \
-                                                                      \
-     *__gmemp == (oldval) ? (*__gmemp = __gnewval, 0) : 1; })
-
+  ({   unsigned long val, offset, temp;                     \
+                                                            \
+       asm volatile (                                       \
+               "move   %1, #0x0\n\t"                        \
+               "move   %2, %4\n\t"                          \
+               "1:\n\t"                                     \
+               "llw    %0, [%3 + %1 << 0]\n\t"              \
+               "bne    %5, %0, 2f\n\t"                      \
+               "move   %2, %4\n\t"                          \
+               "scw    %2, [%3 + %1 << 0]\n\t"              \
+               "beqz   %2, 1b\n\t"                          \
+               "addi   %0, %1, #0\n\t"                      \
+               "j      3f\n\t"                              \
+               "2:\n\t"                                     \
+               "scw    %0, [%3 + %1 << 0]\n\t"              \
+               "addi   %0, %1, #0x1\n\t"                    \
+               "3:\n\t"                                     \
+               : "=&r" (val), "=&r" (offset), "=&r" (temp)  \
+               : "r" (mem), "r" (newval), "r" (oldval)      \
+               : "memory" ); \
+       val; })
 
 #endif
