@@ -31,7 +31,7 @@ _init:
 	mfusr	$ta, $pc
 	add	$gp, $ta, $gp
 	! end of prologue
-	la	$r0, __gmon_start__@GOT
+	la	$r0, PREINIT_FUNCTION@GOT
 	jralnez	$r0
 
 	.section .fini
@@ -45,7 +45,6 @@ _fini:
 	mfusr	$ta, $pc
 	add	$gp, $ta, $gp
 
-	.weak	__gmon_start__
 
 
 #else
@@ -83,7 +82,7 @@ _init:
 	mfusr	$ta, $pc
 	add	$gp, $ta, $gp
 
-	la	$r0, __gmon_start__@GOT
+	la	$r0, PREINIT_FUNCTION@GOT
 	jralnez	$r0
 
 	.section .fini
@@ -97,6 +96,5 @@ _fini:
 	mfusr	$ta, $pc
 	add	$gp, $ta, $gp
 
-	.weak	__gmon_start__
 
 #endif
