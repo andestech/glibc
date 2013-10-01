@@ -4,7 +4,7 @@
 #include <sysdeps/unix/nds32/sysdep.h>
 #include <tls.h>
 
-#define        LIB_SYSCALL     0x7fff
+#define        LIB_SYSCALL    __NR_syscall
 
 #undef SYS_ify
 #ifdef __STDC__
@@ -222,7 +222,7 @@ __local_syscall_error:					\
      if (INTERNAL_SYSCALL_ERROR_P (result_var, err))             \
        {                                                         \
          __set_errno (INTERNAL_SYSCALL_ERRNO (result_var, err)); \
-			result_var = -1 ;						      					  \
+			result_var = -1 ;			 \
        }                                                         \
      result_var;                                                 \
   })
@@ -263,19 +263,19 @@ __local_syscall_error:					\
 
 #define internal_syscall0(name, err, dummy...)                   \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
+       register long __res  asm ("$r0");                         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
-       :															             \
+       :							 \
        : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
        __res;							 \
   })
 
 #define internal_syscall1(name, err, arg1)                       \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
+       register long __res  asm ("$r0");                         \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
@@ -286,9 +286,9 @@ __local_syscall_error:					\
 
 #define internal_syscall2(name, err, arg1, arg2)                 \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
+       register long __res  asm ("$r0");                         \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
@@ -300,10 +300,10 @@ __local_syscall_error:					\
 
 #define internal_syscall3(name, err, arg1, arg2, arg3)           \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __arg3 asm ("$r2") = (long) (arg3);          \
+       register long __res  asm ("$r0");                         \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
@@ -316,11 +316,11 @@ __local_syscall_error:					\
 
 #define internal_syscall4(name, err, arg1, arg2, arg3, arg4)     \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __arg3 asm ("$r2") = (long) (arg3);          \
-       register long __arg4 asm ("$r3") = (long) (arg4);          \
+       register long __res  asm ("$r0");                         \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       register long __arg4 asm ("$r3") = (long) (arg4);         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
@@ -334,12 +334,12 @@ __local_syscall_error:					\
 
 #define internal_syscall5(name, err, arg1, arg2, arg3, arg4, arg5) \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __arg3 asm ("$r2") = (long) (arg3);          \
-       register long __arg4 asm ("$r3") = (long) (arg4);          \
-       register long __arg5 asm ("$r4") = (long) (arg5);          \
+       register long __res  asm ("$r0");                         \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       register long __arg4 asm ("$r3") = (long) (arg4);         \
+       register long __arg5 asm ("$r4") = (long) (arg5);         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
@@ -354,13 +354,13 @@ __local_syscall_error:					\
 
 #define internal_syscall6(name, err, arg1, arg2, arg3, arg4, arg5, arg6) \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __arg3 asm ("$r2") = (long) (arg3);          \
-       register long __arg4 asm ("$r3") = (long) (arg4);          \
-       register long __arg5 asm ("$r4") = (long) (arg5);          \
-       register long __arg6 asm ("$r5") = (long) (arg6);          \
+       register long __res  asm ("$r0");                         \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       register long __arg4 asm ("$r3") = (long) (arg4);         \
+       register long __arg5 asm ("$r4") = (long) (arg5);         \
+       register long __arg6 asm ("$r5") = (long) (arg6);         \
        __asm__ volatile (                                        \
        __issue_syscall (name)                                    \
        : "=r" (__res)         /* output operands  */             \
@@ -374,10 +374,10 @@ __local_syscall_error:					\
         __res;                                                   \
   })
 
-#define internal_syscall_ncs0(name, err, dummy...)                   \
+#define internal_syscall_ncs0(name, err, dummy...)               \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __no   asm ("$r7") = (long) (name);         \
+       register long __res  asm ("$r0");                         \
+       register long __no   asm ("$r0") = (long) (name);         \
        __asm__ volatile (                                        \
        __issue_syscall (LIB_SYSCALL)                             \
        : "=r" (__res)         /* output operands  */             \
@@ -386,11 +386,11 @@ __local_syscall_error:					\
        __res;							 \
   })
 
-#define internal_syscall_ncs1(name, err, arg1)                       \
+#define internal_syscall_ncs1(name, err, arg1)                   \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __no   asm ("$r7") = (long) (name);         \
+       register long __res  asm ("$r0");                         \
+       register long __no   asm ("$r0") = (long) (name);         \
+       register long __arg1 asm ("$r1") = (long) (arg1);         \
        __asm__ volatile (                                        \
        __issue_syscall (LIB_SYSCALL)                             \
        : "=r" (__res)         /* output operands  */             \
@@ -400,12 +400,12 @@ __local_syscall_error:					\
         __res;                                                   \
   })
 
-#define internal_syscall_ncs2(name, err, arg1, arg2)                 \
+#define internal_syscall_ncs2(name, err, arg1, arg2)             \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __no   asm ("$r7") = (long) (name);         \
+       register long __res  asm ("$r0");                         \
+       register long __no   asm ("$r0") = (long) (name);         \
+       register long __arg1 asm ("$r1") = (long) (arg1);         \
+       register long __arg2 asm ("$r2") = (long) (arg2);         \
        __asm__ volatile (                                        \
        __issue_syscall (LIB_SYSCALL)                             \
        : "=r" (__res)         /* output operands  */             \
@@ -416,13 +416,13 @@ __local_syscall_error:					\
         __res;                                                   \
   })
 
-#define internal_syscall_ncs3(name, err, arg1, arg2, arg3)           \
+#define internal_syscall_ncs3(name, err, arg1, arg2, arg3)       \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __arg3 asm ("$r2") = (long) (arg3);          \
-       register long __no   asm ("$r7") = (long) (name);         \
+       register long __res  asm ("$r0");                         \
+       register long __no   asm ("$r0") = (long) (name);         \
+       register long __arg1 asm ("$r1") = (long) (arg1);         \
+       register long __arg2 asm ("$r2") = (long) (arg2);         \
+       register long __arg3 asm ("$r3") = (long) (arg3);         \
        __asm__ volatile (                                        \
        __issue_syscall (LIB_SYSCALL)                             \
        : "=r" (__res)         /* output operands  */             \
@@ -434,14 +434,14 @@ __local_syscall_error:					\
         __res;                                                   \
   })
 
-#define internal_syscall_ncs4(name, err, arg1, arg2, arg3, arg4)     \
+#define internal_syscall_ncs4(name, err, arg1, arg2, arg3, arg4) \
   ({                                                             \
-       register long __res  asm ("$r0");                          \
-       register long __arg1 asm ("$r0") = (long) (arg1);          \
-       register long __arg2 asm ("$r1") = (long) (arg2);          \
-       register long __arg3 asm ("$r2") = (long) (arg3);          \
-       register long __arg4 asm ("$r3") = (long) (arg4);          \
-       register long __no   asm ("$r7") = (long) (name);         \
+       register long __res  asm ("$r0");                         \
+       register long __no   asm ("$r0") = (long) (name);         \
+       register long __arg1 asm ("$r1") = (long) (arg1);         \
+       register long __arg2 asm ("$r2") = (long) (arg2);         \
+       register long __arg3 asm ("$r3") = (long) (arg3);         \
+       register long __arg4 asm ("$r4") = (long) (arg4);         \
        __asm__ volatile (                                        \
        __issue_syscall (LIB_SYSCALL)                             \
        : "=r" (__res)         /* output operands  */             \
