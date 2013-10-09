@@ -1,7 +1,14 @@
 #include <tcb-offsets.h>
 
-#define SAVE_PID
-#define RESTORE_PID
+#define SAVE_PID \
+  lwi  $r15, [$r25 + PID_OFFSET]; \
+  subri $r15, $r15, 0; \
+  swi  $r15, [$r25 + PID_OFFSET];
+
+#define RESTORE_PID \
+  lwi  $r15, [$r25 + PID_OFFSET]; \
+  subri $r15, $r15, 0; \
+  swi  $r15, [$r25 + PID_OFFSET];
 
 /*
    Revision History:
@@ -21,9 +28,13 @@ ENTRY (__vfork)
 #endif	
 
 #ifdef __NR_vfork
+    SAVE_PID
     syscall __NR_vfork
     bltz $r0, 2f
 1:
+    beqz $r0, 4f
+    RESTORE_PID
+4:
     ret
 2:
     sltsi $r1, $r0, -4096
@@ -76,8 +87,12 @@ ENTRY (__vfork)
 
 #ifndef __ASSUME_VFORK_SYSCALL
     /* If we don't have vfork, fork is close enough. */
+        SAVE_PID
 	syscall __NR_fork
-	bgez $r0, 1f
+	! bgez $r0, 1f
+        beqz $r0, 1f
+        RESTORE_PID
+        j    1f
 	sltsi $r1, $r0, -4096
 	bnez	$r1, 1f
 

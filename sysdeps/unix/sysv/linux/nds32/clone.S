@@ -24,6 +24,10 @@
 #define _ERRNO_H	1
 #include <bits/errno.h>
 
+#ifdef RESET_PID
+#include <tcb-offsets.h>
+#endif
+
 /* int clone(int (*fn)(void *), void *child_stack, int flags, void *arg);
    _syscall2(int, clone, int, flags, void *, child_stack)  */
 
@@ -70,16 +74,33 @@ ENTRY(__clone)
 	bltz	$r0, 5b
 
 	! parent
+	! swi     $r0, [$r4]                      ! Store child tid to pd->tid.
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
 	popm	$fp, $gp, $sp
 #endif /* PIC  */
 	ret
 
+#ifdef RESET_PID
+6:
+	swi     $r0, [$r25 + PID_OFFSET]
+        swi     $r0, [$r25 + TID_OFFSET]
+        j       7f
 4:
+        beqz    $r3, 6b
+	move    $r25, $r3
+	addi    $r25, $r25, 0x490               ! TLS_TCB_OFFSET + TLS_PRE_TCB_SIZE
+        __do_syscall(getpid)
+	swi     $r0, [$r25 + PID_OFFSET]
+        swi     $r0, [$r25 + TID_OFFSET]
+7:
+#else
+4:
+#endif
 	/* Only in child's stack.  */
 	pop	$r1				! fn
 	pop	$r0				! arg
+
 
 #if !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP__)
 	addi	$sp, $sp, -24

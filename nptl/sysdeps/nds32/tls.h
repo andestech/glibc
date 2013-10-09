@@ -51,7 +51,7 @@ typedef union dtv
 # define TLS_DTV_AT_TP	1
 
 /* We use the multiple_threads field in the pthread struct */
-#define TLS_MULTIPLE_THREADS_IN_TCB	0
+#define TLS_MULTIPLE_THREADS_IN_TCB	1
 
 /* Get the thread descriptor definition.  */
 # include <nptl/descr.h>
@@ -67,21 +67,19 @@ typedef struct
   dtv_t *dtv;
 } tcbhead_t;
 
-/* This is the size of the initial TCB.  Can't be just sizeof (tcbhead_t),
-   because NPTL getpid, __libc_alloca_cutoff etc. need (almost) the whole
-   struct pthread even when not linked with -lpthread.  */
-# define TLS_INIT_TCB_SIZE sizeof (struct pthread)
-
+/* This is the size of the initial TCB.  */
+# define TLS_INIT_TCB_SIZE      0
 
 /* Alignment requirements for the initial TCB.  */
-# define TLS_INIT_TCB_ALIGN	__alignof__ (struct pthread)
+# define TLS_INIT_TCB_ALIGN     __alignof__ (struct pthread)
 
 /* This is the size of the TCB.  */
-# define TLS_TCB_SIZE sizeof (struct pthread)
-
+# define TLS_TCB_SIZE           0
 
 /* Alignment requirements for the TCB.  */
-# define TLS_TCB_ALIGN		__alignof__ (struct pthread)
+# define TLS_TCB_ALIGN          __alignof__ (struct pthread)
+
+
 
 /* This is the size we need before TCB - actually, it includes the TCB.  */
 # define TLS_PRE_TCB_SIZE \
@@ -91,8 +89,6 @@ typedef struct
 /* Return the thread descriptor (tp) for the current thread.  */
 register void *__thread_pointer asm ("$r25");
 
-
-// asm ("tp");
 
 /* The thread pointer (in hardware register tp) points to the end of
    the TCB.  The pthread_descr structure is immediately in front of the TCB.  */
@@ -123,11 +119,6 @@ register void *__thread_pointer asm ("$r25");
 # define THREAD_SELF \
     ((struct pthread *) (__thread_pointer \
 			 - TLS_TCB_OFFSET - TLS_PRE_TCB_SIZE))
-
-/* Magic for libthread_db to know how to do THREAD_SELF.  */
-# define REG_TP 24
-# define DB_THREAD_SELF \
-  REGISTER (32, 32, REG_TP * 4, - TLS_TCB_OFFSET - TLS_PRE_TCB_SIZE)
 
 /* Read member of the thread descriptor directly.  */
 # define THREAD_GETMEM(descr, member) (descr->member)

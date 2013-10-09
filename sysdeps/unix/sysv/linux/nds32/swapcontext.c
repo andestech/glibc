@@ -1,6 +1,6 @@
-/* Definition of `struct stat' used in the kernel.
-   Copyright (C) 2003-2013 Free Software Foundation, Inc.
+/* Copyright (C) 2001-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
+     Contributed by David Mosberger-Tang <davidm@hpl.hp.com>.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -16,5 +16,24 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#define STAT_IS_KERNEL_STAT 1
-#undef XSTAT_IS_XSTAT64
+#include <ucontext.h>
+
+struct rv
+  {
+    long retval;
+    long first_return;
+  };
+
+extern struct rv __getcontext (ucontext_t *__ucp) __THROW;
+extern int __setcontext (const ucontext_t *__ucp) __THROW;
+
+int
+__swapcontext (ucontext_t *oucp, const ucontext_t *ucp)
+{
+  struct rv rv = __getcontext (oucp);
+  if (rv.first_return)
+    __setcontext (ucp);
+  return 0;
+}
+
+weak_alias (__swapcontext, swapcontext)

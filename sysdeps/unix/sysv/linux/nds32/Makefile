@@ -23,4 +23,7 @@ sysdep_routines += sigrestorer
 endif
 
 
-# TBD, add our sysdep_routines here.
+ifeq ($(subdir),stdlib)
+gen-as-const-headers += ucontext_i.sym
+endif
+
