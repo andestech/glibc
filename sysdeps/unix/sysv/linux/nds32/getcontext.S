@@ -34,7 +34,8 @@ ENTRY(__getcontext)
         swi     $lp, [$r0 + UCONTEXT_PC]
         addi    $r15, $r0, UCONTEXT_GREGS
         xor     $r1, $r1, $r1
-	smw.bim	$r0, [$r15], $r14
+	smw.bim	$r1, [$r15], $r1
+	smw.bim	$r1, [$r15], $r14
         addi    $r15, $r15, 4
 	smw.bim	$r16, [$r15], $r25, #0xf
 	move    $r4, $r0
