@@ -1,4 +1,0 @@
-# File name	Caller	Syscall name	# args	Strong name	Weak names
-# File name	Caller	Syscall name	Args	Strong name	Weak names
-connect		-	connect		Ci:ipi	__libc_connect	__connect_internal __connect connect
-send		-	send		Ci:ibni	__libc_send	__send send
