@@ -494,7 +494,7 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	{
 	  got[2] = (Elf32_Addr) &_dl_runtime_profile;
 
-	  if (_dl_name_match_p (GLRO(dl_profile), l))
+	  if (GLRO(dl_profile) != NULL && _dl_name_match_p (GLRO(dl_profile), l))
 	    /* This is the object we are looking for.  Say that we really
 	       want profiling and the timers are started.  */
 	    GL(dl_profile_map) = l;
@@ -591,6 +591,41 @@ asm ("\n\
 \n\
 ");
 
+# define TRAMPOLINE_BODY_TEMPLATE_AUDIT(tramp_name, fixup_name) \
+asm ("\n\
+	! adjust stack\n\
+	"STACK_PUSH"\n\
+\n\
+	! set arguments\n\
+	addi	$r0,	$r17,	0\n\
+!	addi	$r1,	$r16,	0\n\
+	slli    $r1,    $r16,   2\n\
+	slli    $r16,   $r16,   3\n\
+	add     $r1,    $r1,    $r16\n\
+	addi	$r2,	$lp,	0\n\
+	addi	$r3,	$sp,	0\n\
+	push	$r0\n\
+	addi	$r4,	$sp,	0\n\
+\n\
+	! call fixup routine\n\
+	bal	"#fixup_name"\n\
+\n\
+	! save the return\n\
+	addi	$ta,	$r0,	0\n\
+	pop	$r0\n\
+\n\
+	! adjust sp and reload registers\n\
+	"STACK_POP"\n\
+	lmw.bim	$sp,	[$sp],	$sp,	6\n\
+	lmw.bim	$r0,	[$sp],	$r5,	0\n\
+\n\
+	! jump to the newly found address\n\
+	jr		$r15\n\
+\n\
+	.size "#tramp_name", .-"#tramp_name"\n\
+\n\
+");
+
 #ifndef PROF
 #ifdef SHARED
 #define  ELF_MACHINE_RUNTIME_TRAMPOLINE	\
@@ -599,7 +634,7 @@ asm ("\n\
   TRAMPOLINE_BODY_TEMPLATE (_dl_runtime_resolve, _dl_fixup@PLT);	\
   TRAMPOLINE_PROLOG_TEMPLATE (_dl_runtime_profile);	\
   TRAMPOLINE_GP_TEMPLATE;	\
-  TRAMPOLINE_BODY_TEMPLATE (_dl_runtime_profile, _dl_profile_fixup@PLT);
+  TRAMPOLINE_BODY_TEMPLATE_AUDIT (_dl_runtime_profile, _dl_profile_fixup@PLT);
 #else
 #define  ELF_MACHINE_RUNTIME_TRAMPOLINE	\
   TRAMPOLINE_PROLOG_TEMPLATE (_dl_runtime_resolve);	\
@@ -607,7 +642,7 @@ asm ("\n\
   TRAMPOLINE_BODY_TEMPLATE (_dl_runtime_resolve, _dl_fixup);	\
   TRAMPOLINE_PROLOG_TEMPLATE (_dl_runtime_profile);	\
   TRAMPOLINE_GP_TEMPLATE;	\
-  TRAMPOLINE_BODY_TEMPLATE (_dl_runtime_profile, _dl_profile_fixup);
+  TRAMPOLINE_BODY_TEMPLATE_AUDIT (_dl_runtime_profile, _dl_profile_fixup);
 #endif
 #else
 #ifdef SHARED

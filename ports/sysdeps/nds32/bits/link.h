@@ -18,3 +18,42 @@
 #ifndef	_LINK_H
 # error "Never include <bits/link.h> directly; use <link.h> instead."
 #endif
+
+/* Registers for entry into PLT on NDS32.  */
+typedef struct La_nds32_regs
+{
+  uint32_t lr_gp;
+  uint32_t lr_lp;
+  uint32_t lr_reg0;
+  uint32_t lr_reg1;
+  uint32_t lr_reg2;
+  uint32_t lr_reg3;
+  uint32_t lr_reg4;
+  uint32_t lr_reg5;
+} La_nds32_regs;
+
+/* Return values for calls from PLT on NDS32.  */
+typedef struct La_nds32_retval
+{
+  uint32_t lrv_reg0;
+  uint32_t lrv_reg1;
+} La_nds32_retval;
+
+
+__BEGIN_DECLS
+
+extern Elf32_Addr la_nds32_gnu_pltenter (Elf32_Sym *__sym, unsigned int __ndx,
+				       uintptr_t *__refcook,
+				       uintptr_t *__defcook,
+				       La_nds32_regs *__regs,
+				       unsigned int *__flags,
+				       const char *__symname,
+				       long int *__framesizep);
+extern unsigned int la_nds32_gnu_pltexit (Elf32_Sym *__sym, unsigned int __ndx,
+					uintptr_t *__refcook,
+					uintptr_t *__defcook,
+					const La_nds32_regs *__inregs,
+					La_nds32_retval *__outregs,
+					const char *__symname);
+
+__END_DECLS
