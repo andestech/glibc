@@ -515,9 +515,13 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 #if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
 # define STACK_PUSH
 # define STACK_POP
+# define STACK_PUSH_AUDIT
+# define STACK_POP_AUDIT
 #else
 # define STACK_PUSH	"addi $sp, $sp,	-24"
 # define STACK_POP	"addi $sp, $sp,	24"
+# define STACK_PUSH_AUDIT     "addi $r19, $r19, -24"
+# define STACK_POP_AUDIT      "addi $r19, $r19, 24"
 #endif
 // #endif /* !dl_machine_h */
 
@@ -591,6 +595,80 @@ asm ("\n\
 \n\
 ");
 
+// PLTENTER & PLTEXIT version
+
+# define TRAMPOLINE_BODY_TEMPLATE_AUDIT(tramp_name, fixup_name) \
+asm ("\n\
+	! adjust stack\n\
+	"STACK_PUSH"\n\
+\n\
+	! set arguments\n\
+	addi	$r0,	$r17,	0\n\
+!	addi	$r1,	$r16,	0\n\
+	slli	$r1,	$r16,	2\n\
+	slli	$r16,	$r16,	3\n\
+	add	$r1,	$r1,	$r16\n\
+	addi	$r2,	$lp,	0\n\
+	addi	$r3,	$sp,	0\n\
+	push	$r3\n\
+	smw.adm	$r0,	[$sp],	$r1\n\
+	push	$r0\n\
+	addi	$r4,	$sp,	0\n\
+	push	$r3\n\
+\n\
+	! call fixup routine\n\
+	bal	"#fixup_name"\n\
+\n\
+	pop	$r3\n\
+	! save the return\n\
+	addi	$r15,	$r0,	0\n\
+	move	$r0,	$sp\n\
+	smw.adm	$r18,	[$sp],	$r20\n\
+	move	$r20,	$r3\n\
+	lwi	$r18,	[$r0]\n\
+	bgez	$r18,	1f\n\
+	movi	$r18,	0\n\
+1:\n\
+!	sub	$sp,	$sp,	$r18\n\
+	addi	$r19,	$r0,	16\n\
+\n\
+	! adjust sp and reload registers\n\
+	"STACK_POP_AUDIT"\n\
+	lmw.bim	$sp,	[$r19],	$sp,	6\n\
+        lmw.bim	$r0,	[$r19],	$r5,	0\n\
+\n\
+	! jump to the newly found address\n\
+!	push	$r18\n\
+	jral	$r15\n\
+!	pop	$r18\n\
+!	add	$sp,	$sp,	$r18\n\
+	smw.adm	$r0,	[$sp],	$r1\n\
+	addi	$r19,	$sp,	24\n\
+	lmw.bim	$r0,	[$r19],	$r1\n\
+	move	$r3,	$sp\n\
+	! $r3 outregs\n\
+	move	$r2,	$r20\n\
+	mfusr	$ta,	$PC\n\
+	sethi	$gp,	HI20(_GLOBAL_OFFSET_TABLE_+4);\n\
+	ori	$gp,	$gp,	LO12(_GLOBAL_OFFSET_TABLE_+8);\n\
+	add	$gp,	$ta,	$gp;\n\
+	bal	_dl_call_pltexit@PLT\n\
+	lmw.bim	$r0,	[$sp],	$r1\n\
+	lmw.bim	$r18,	[$sp],	$r20\n\
+	addi	$sp,	$sp,	16\n\
+	"STACK_POP"\n\
+	lmw.bim	$sp,	[$sp],	$sp,	6\n\
+	addi	$sp,	$sp,	8\n\
+	lmw.bim	$r2,	[$sp],	$r5,	0\n\
+	ret\n\
+\n\
+	.size "#tramp_name", .-"#tramp_name"\n\
+\n\
+");
+
+
+#if 0
+// PLTENTER version
 # define TRAMPOLINE_BODY_TEMPLATE_AUDIT(tramp_name, fixup_name) \
 asm ("\n\
 	! adjust stack\n\
@@ -625,6 +703,7 @@ asm ("\n\
 	.size "#tramp_name", .-"#tramp_name"\n\
 \n\
 ");
+#endif
 
 #ifndef PROF
 #ifdef SHARED
