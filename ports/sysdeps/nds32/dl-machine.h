@@ -611,6 +611,8 @@ asm ("\n\
 	addi	$r2,	$lp,	0\n\
 	addi	$r3,	$sp,	0\n\
 	push	$r3\n\
+	addi	$r3,	$r3,	-4\n\
+	push	$r3\n\
 	smw.adm	$r0,	[$sp],	$r1\n\
 	push	$r0\n\
 	addi	$r4,	$sp,	0\n\
@@ -630,7 +632,7 @@ asm ("\n\
 	movi	$r18,	0\n\
 1:\n\
 !	sub	$sp,	$sp,	$r18\n\
-	addi	$r19,	$r0,	16\n\
+	addi	$r19,	$r0,	20\n\
 \n\
 	! adjust sp and reload registers\n\
 	"STACK_POP_AUDIT"\n\
@@ -655,7 +657,7 @@ asm ("\n\
 	bal	_dl_call_pltexit@PLT\n\
 	lmw.bim	$r0,	[$sp],	$r1\n\
 	lmw.bim	$r18,	[$sp],	$r20\n\
-	addi	$sp,	$sp,	16\n\
+	addi	$sp,	$sp,	20\n\
 	"STACK_POP"\n\
 	lmw.bim	$sp,	[$sp],	$sp,	6\n\
 	addi	$sp,	$sp,	8\n\
@@ -682,6 +684,8 @@ asm ("\n\
 	add     $r1,    $r1,    $r16\n\
 	addi	$r2,	$lp,	0\n\
 	addi	$r3,	$sp,	0\n\
+	push	$r3\n\
+	addi	$r3,	$r3,	-4\n\
 	push	$r0\n\
 	addi	$r4,	$sp,	0\n\
 \n\
@@ -691,6 +695,7 @@ asm ("\n\
 	! save the return\n\
 	addi	$ta,	$r0,	0\n\
 	pop	$r0\n\
+	pop	$r3\n\
 \n\
 	! adjust sp and reload registers\n\
 	"STACK_POP"\n\

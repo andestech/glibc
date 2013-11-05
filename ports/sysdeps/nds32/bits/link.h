@@ -22,6 +22,7 @@
 /* Registers for entry into PLT on NDS32.  */
 typedef struct La_nds32_regs
 {
+  uint32_t lr_sp;
   uint32_t lr_gp;
   uint32_t lr_lp;
   uint32_t lr_reg0;
