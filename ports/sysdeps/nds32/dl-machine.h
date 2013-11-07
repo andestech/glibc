@@ -596,7 +596,7 @@ asm ("\n\
 ");
 
 // PLTENTER & PLTEXIT version
-
+#if 1
 # define TRAMPOLINE_BODY_TEMPLATE_AUDIT(tramp_name, fixup_name) \
 asm ("\n\
 	! adjust stack\n\
@@ -614,25 +614,29 @@ asm ("\n\
 	addi	$r3,	$r3,	-4\n\
 	push	$r3\n\
 	smw.adm	$r0,	[$sp],	$r1\n\
-	push	$r0\n\
+	xor	$r4,	$r4,	$r4\n\
+	push	$r4\n\
 	addi	$r4,	$sp,	0\n\
 	push	$r3\n\
+	push	$r4\n\
 \n\
 	! call fixup routine\n\
+	addi	$sp,	$sp, -16\n\
 	bal	"#fixup_name"\n\
+	addi	$sp,	$sp, 16\n\
 \n\
+	pop	$r4\n\
 	pop	$r3\n\
 	! save the return\n\
 	addi	$r15,	$r0,	0\n\
-	move	$r0,	$sp\n\
 	smw.adm	$r18,	[$sp],	$r20\n\
 	move	$r20,	$r3\n\
-	lwi	$r18,	[$r0]\n\
+	lwi	$r18,	[$r4]\n\
 	bgez	$r18,	1f\n\
 	movi	$r18,	0\n\
 1:\n\
-!	sub	$sp,	$sp,	$r18\n\
-	addi	$r19,	$r0,	20\n\
+	sub	$sp,	$sp,	$r18\n\
+	addi	$r19,	$r4,	20\n\
 \n\
 	! adjust sp and reload registers\n\
 	"STACK_POP_AUDIT"\n\
@@ -640,12 +644,12 @@ asm ("\n\
         lmw.bim	$r0,	[$r19],	$r5,	0\n\
 \n\
 	! jump to the newly found address\n\
-!	push	$r18\n\
+	smw.adm	$r18,	[$sp],	$r20\n\
 	jral	$r15\n\
-!	pop	$r18\n\
-!	add	$sp,	$sp,	$r18\n\
+	lmw.bim	$r18,	[$sp],	$r20\n\
+	add	$sp,	$sp,	$r18\n\
 	smw.adm	$r0,	[$sp],	$r1\n\
-	addi	$r19,	$sp,	24\n\
+	addi	$r19,	$r20,	-12\n\
 	lmw.bim	$r0,	[$r19],	$r1\n\
 	move	$r3,	$sp\n\
 	! $r3 outregs\n\
@@ -668,6 +672,7 @@ asm ("\n\
 \n\
 ");
 
+#endif
 
 #if 0
 // PLTENTER version
