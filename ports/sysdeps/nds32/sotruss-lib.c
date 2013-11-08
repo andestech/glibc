@@ -30,7 +30,7 @@ la_nds32_gnu_pltenter (ElfW(Sym) *sym __attribute__ ((unused)),
 		      const char *symname, long int *framesizep)
 {
   print_enter (refcook, defcook, symname,
-	       regs->lr_reg0, regs->lr_reg1, regs->lr_reg2,
+	       regs->lr_reg[0], regs->lr_reg[1], regs->lr_reg[2],
 	       *flags);
   /* No need to copy anything, we will not need the parameters in any case.  */
   *framesizep = 0;
@@ -43,7 +43,7 @@ la_nds32_gnu_pltexit (ElfW(Sym) *sym, unsigned int ndx, uintptr_t *refcook,
 		     uintptr_t *defcook, const struct La_nds32_regs *inregs,
 		     struct La_nds32_retval *outregs, const char *symname)
 {
-  print_exit (refcook, defcook, symname, outregs->lrv_reg0);
+  print_exit (refcook, defcook, symname, outregs->lrv_reg[0]);
 
   return 0;
 }

@@ -25,19 +25,13 @@ typedef struct La_nds32_regs
   uint32_t lr_sp;
   uint32_t lr_gp;
   uint32_t lr_lp;
-  uint32_t lr_reg0;
-  uint32_t lr_reg1;
-  uint32_t lr_reg2;
-  uint32_t lr_reg3;
-  uint32_t lr_reg4;
-  uint32_t lr_reg5;
+  uint32_t lr_reg[6];
 } La_nds32_regs;
 
 /* Return values for calls from PLT on NDS32.  */
 typedef struct La_nds32_retval
 {
-  uint32_t lrv_reg0;
-  uint32_t lrv_reg1;
+  uint32_t lrv_reg[2];
 } La_nds32_retval;
 
 
