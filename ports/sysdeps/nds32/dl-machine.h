@@ -633,7 +633,15 @@ asm ("\n\
 	move	$r20,	$r3\n\
 	lwi	$r18,	[$r4]\n\
 	bgez	$r18,	1f\n\
-	movi	$r18,	0\n\
+	! adjust sp and reload registers\n\
+	lmw.bim	$r18,	[$sp],	$r20\n\
+	addi	$sp,	$sp,	20\n\
+	"STACK_POP"\n\
+	lmw.bim	$sp,	[$sp],	$sp,	6\n\
+	lmw.bim	$r0,	[$sp],	$r5,	0\n\
+\n\
+	! jump to the newly found address\n\
+	jr		$r15\n\
 1:\n\
 	sub	$sp,	$sp,	$r18\n\
 	addi	$r19,	$r4,	20\n\
