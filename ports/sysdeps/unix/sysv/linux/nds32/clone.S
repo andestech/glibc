@@ -1,4 +1,4 @@
-/* Copyright (C) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
+/* Copyright (C) 2010-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Pat Beirne <patb@corelcomputer.com>
 
@@ -27,6 +27,9 @@
 #ifdef RESET_PID
 #include <tcb-offsets.h>
 #endif
+	
+#define CLONE_VM      0x00000100
+#define CLONE_THREAD  0x00010000
 
 /* int clone(int (*fn)(void *), void *child_stack, int flags, void *arg);
    _syscall2(int, clone, int, flags, void *, child_stack)  */
@@ -75,6 +78,17 @@ ENTRY(__clone)
 
 	! parent
 	! swi     $r0, [$r4]                      ! Store child tid to pd->tid.
+	push	$r0
+	movi	$r0, CLONE_THREAD
+	and	$r0, $r2, $r0
+	beqz	$r0, 9f				! Set 
+	pop	$r0
+	beqz	$r4, 10f
+	swi	$r0, [$r4]
+	j	10f
+9:
+	pop	$r0
+10:
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
 	popm	$fp, $gp, $sp
@@ -90,7 +104,16 @@ ENTRY(__clone)
         beqz    $r3, 6b
 	move    $r25, $r3
 	addi    $r25, $r25, 0x490               ! TLS_TCB_OFFSET + TLS_PRE_TCB_SIZE
-        __do_syscall(getpid)
+	movi	$r0, CLONE_THREAD		! Skip when CLONE_THREAD is set.
+	and	$r0, $r2, $r0
+	bnez	$r0, 7f
+	movi    $r0, CLONE_VM			! Value = -1 when CLONE_VM is set.
+	and	$r0, $r2, $r0
+	beqz	$r0, 8f
+	movi	$r0, -1
+	j	6b
+8:
+        __do_syscall(getpid) ! __do_syscall(gettid) ! __do_syscall(getpid)
 	swi     $r0, [$r25 + PID_OFFSET]
         swi     $r0, [$r25 + TID_OFFSET]
 7:
