@@ -61,8 +61,8 @@
 #define F_SETLKW64	35	/* Set record locking info (blocking).	*/
 
 #if defined __USE_BSD || defined __USE_UNIX98
-# define F_SETOWN	24	/* Get owner of socket (receiver of SIGIO).  */
-# define F_GETOWN	23	/* Set owner of socket (receiver of SIGIO).  */
+# define __F_SETOWN	24	/* Get owner of socket (receiver of SIGIO).  */
+# define __F_GETOWN	23	/* Set owner of socket (receiver of SIGIO).  */
 #endif
 
 typedef struct flock
