@@ -55,7 +55,7 @@ extern "C"
 		EHFF_ARCH_VER_V3M		= 0x4,
 	};
 
-	static char *EHFF_ARCH_VER_MSG[] =
+	static const char *EHFF_ARCH_VER_MSG[] =
 	{
 		"RESERVED",
 		"BASE V1",
@@ -100,7 +100,7 @@ extern "C"
 		EHFF_ELF_VER_1_4_0		= 0x2,
 	};
 
-	static char *EHFF_ELF_VER_MSG[] =
+	static const char *EHFF_ELF_VER_MSG[] =
 	{
 		"1.3.0",
 		"1.3.1",
@@ -148,7 +148,7 @@ extern "C"
 	typedef unsigned int (* CALLBACK_FUNC) (unsigned int index);
 
 
-	static char *NEC_MSG_FPU_reg[5] =
+	static const char *NEC_MSG_FPU_reg[5] =
 	{
 		"N/A",
 		" 8SP/ 4DP",
@@ -156,7 +156,7 @@ extern "C"
 		"32SP/16DP",
 		"32SP/32DP"
 	};
-	static char *NEC_MSG_endian[2] =
+	static const char *NEC_MSG_endian[2] =
 	{
 		"little",
 		"big"
@@ -165,7 +165,7 @@ extern "C"
 
 
 
-	static char *NEC_MSG_ISA[2] =
+	static const char *NEC_MSG_ISA[2] =
 	{
 		"OFF",
 		"ON"
