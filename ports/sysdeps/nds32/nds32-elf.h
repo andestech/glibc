@@ -439,6 +439,8 @@ extern "C"
 			case 2:
 				big_endian_elf = 1;
 				break;
+			default:
+				return 1;
 		}
 
 		if(SR_mmu_cfg & MMU_CFG_DE)
