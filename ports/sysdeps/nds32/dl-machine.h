@@ -31,7 +31,6 @@
 
 #define BUFLEN 1024
 
-static int feature_set = 0 ;
 static nds32_elfinfo_t target ;
 
 #if defined(NDS32_ABI_2)
