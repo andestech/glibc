@@ -249,7 +249,7 @@ extern "C"
 
 
 	//NDS32 Elf Check print
-	static inline void NEC_print(char *buf, ELF_Fail_Type type, char *name, char *cpu, char *elf, char *error_message)
+	static inline void NEC_print(char *buf, ELF_Fail_Type type, const char *name, char *cpu, char *elf, const char *error_message)
 	  {
 	    char temp[100];
 	    switch(type)
@@ -295,7 +295,7 @@ extern "C"
 	    strcat(buf, temp);
 	  }
 
-	static inline int NEC_check_bool(char *buf, ELF_Fail_Type type, char *isa, int cpu, int elf)
+	static inline int NEC_check_bool(char *buf, ELF_Fail_Type type, const char *isa, int cpu, int elf)
 	{
 		int code;
 		if(cpu) cpu = 1;
