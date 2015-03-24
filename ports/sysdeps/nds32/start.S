@@ -89,10 +89,16 @@ _start:
 	ori	$gp,	$gp, LO12(_GLOBAL_OFFSET_TABLE_ + 4)
 	add	$gp,	$lp,	$gp
 #else
-	mfusr $r15, $PC
-	sethi	$gp,	HI20(_GLOBAL_OFFSET_TABLE_+4)
-	ori	$gp,	$gp, LO12(_GLOBAL_OFFSET_TABLE_ + 8)
-	add	$gp,	$r15,	$gp
+#ifdef NDS32_ISA_BASELINE_V3
+        sethi   $gp, HI20(_GLOBAL_OFFSET_TABLE_ -  8)
+        ori     $gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_ - 4)
+        add.pc  $gp, $pc, $gp
+#else
+        sethi   $gp, hi20(_GLOBAL_OFFSET_TABLE_ - 8)
+        ori     $gp, $gp, lo12(_GLOBAL_OFFSET_TABLE_ - 4)
+        mfusr   $ta, $pc
+        add     $gp, $ta, $gp
+#endif
 #endif
 	
 	la		$r3,	__libc_csu_init@GOTOFF
@@ -100,7 +106,7 @@ _start:
 	la		$r0,	main@GOT
 	
 	/* push everything to stack, r5 is rtld_fini and r7 is garbage */
-	pushm	$r0,	$r7,	$sp
+	pushm	$r0,	$r7
 	
 	/* now start it up */
 	bal	__libc_start_main@PLT
@@ -108,14 +114,14 @@ _start:
 	/* should never get here */
 	bal	abort@PLT
 #else
-   la    $gp, _SDA_BASE_ ! init GP for small data access
+	la    $gp, _SDA_BASE_ ! init GP for small data access
 	
 	la		$r3,	__libc_csu_init
 	la		$r4,	__libc_csu_fini
 	la		$r0,	main
 	
 	/* push everything to stack, r5 is rtld_fini and r7 is garbage */
-	pushm	$r0,	$r7,	$sp
+	pushm	$r0,	$r7
 	
 	/* now start it up */
 	bal	__libc_start_main

@@ -40,17 +40,23 @@ syscall_error:
 
 #ifdef PIC
 	/* set GP register */
-	pushm	$gp, $lp, $sp
+	pushm	$gp, $lp
 #ifdef __NDS32_N1213_43U1H__
 	jal	2f
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_)
-	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+4)
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_ + 4)
 	add	$gp,	$gp,	$lp
 #else
-	mfusr	$r15, $PC
-	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4)
-	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8)
-	add	$gp,	$gp,	$r15
+#ifdef NDS32_ISA_BASELINE_V3
+        sethi   $gp, HI20(_GLOBAL_OFFSET_TABLE_ -  8)
+        ori     $gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_ - 4)
+        add.pc  $gp, $pc, $gp
+#else
+        sethi   $gp, hi20(_GLOBAL_OFFSET_TABLE_ - 8)
+        ori     $gp, $gp, lo12(_GLOBAL_OFFSET_TABLE_ - 4)
+        mfusr   $ta, $pc
+        add     $gp, $ta, $gp
+#endif
 #endif
 #endif	
 
@@ -101,7 +107,7 @@ syscall_error:
 	pop	$lp
 #ifdef PIC
 	/* restore GP register */
-	popm	$gp, $lp, $sp
+	popm	$gp, $lp
 #endif
 2:
 	ret
