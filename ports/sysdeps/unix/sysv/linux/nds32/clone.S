@@ -38,7 +38,7 @@ ENTRY(__clone)
 
 #ifdef PIC
 	/* set GP register to parent only, cause child's $SP will be $r1. */
-	pushm	$fp, $gp, $sp
+	pushm	$fp, $gp
 #ifndef __NDS32_N1213_43U1H__
 	mfusr	$r15, $pc
 #endif /* ! __NDS32_N1213_43U1H__  */
@@ -58,7 +58,7 @@ ENTRY(__clone)
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
 	la	$r15, C_SYMBOL_NAME(__syscall_error@PLT)
-	popm	$fp, $gp, $sp
+	popm	$fp, $gp
 #else /* ! PIC  */
 	la	$r15, C_SYMBOL_NAME(__syscall_error)
 #endif /* ! PIC  */
@@ -91,7 +91,7 @@ ENTRY(__clone)
 10:
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
-	popm	$fp, $gp, $sp
+	popm	$fp, $gp
 #endif /* PIC  */
 	ret
 
