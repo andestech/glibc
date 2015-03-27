@@ -20,7 +20,7 @@
  */
 #ifdef NDS_ABI_V1
 #define __do_syscall(syscall_name)		\
-  pushm	$r7, $r8, $sp;				\
+  pushm	$r7, $r8;				\
   li	$r7, SYS_ify(syscall_name);  	\
   ori	$r7, $r7, lo12(SYS_ify(syscall_name)); 	\
   syscall	LIB_SYSCALL;			\
@@ -28,7 +28,7 @@
   bne	$r0, $r7, 1f;				\
   beqz	$r5, 2f;				\
 1:						\
-  popm	$r7, $r8, $sp;				\
+  popm	$r7, $r8;				\
 2:
 #else
 #define __do_syscall(syscall_name)		\
@@ -123,7 +123,7 @@
 #ifdef PIC
 #ifdef __NDS32_N1213_43U1H__
 #define SYSCALL_ERROR_HANDLER				\
-__local_syscall_error:	pushm	$gp, $lp, $sp;				\
+__local_syscall_error:	pushm	$gp, $lp;				\
 	jal	1f;	\
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_);	\
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+4);	\
@@ -136,12 +136,12 @@ __local_syscall_error:	pushm	$gp, $lp, $sp;				\
 	pop	$r1;			\
 	swi	$r1, [$r0];				\
 	li		$r0, -1;				\
-	popm	$gp, $lp, $sp;				\
+	popm	$gp, $lp;				\
 1: \
    ret;
 #else
 #define SYSCALL_ERROR_HANDLER				\
-__local_syscall_error:	pushm	$gp, $lp, $sp;				\
+__local_syscall_error:	pushm	$gp, $lp;				\
 	mfusr $r15, $PC;	\
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4);	\
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8);	\
@@ -154,7 +154,7 @@ __local_syscall_error:	pushm	$gp, $lp, $sp;				\
 	pop	$r1;			\
 	swi	$r1, [$r0];				\
 	li		$r0, -1;				\
-	popm	$gp, $lp, $sp;				\
+	popm	$gp, $lp;				\
 1: \
    ret;
 #endif
