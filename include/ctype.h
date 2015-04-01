@@ -46,19 +46,6 @@ __ctype_tolower_loc (void)
   return __libc_tsd_address (const int32_t *, CTYPE_TOLOWER);
 }
 
-# else
-
-
-#  include "../locale/localeinfo.h"
-#  include <bits/libc-tsd.h>
-
-/*
-  locale/lc-ctype.c -DNOT_IN_libc=1
-*/
-__libc_tsd_define (extern, const uint16_t *, CTYPE_B)
-__libc_tsd_define (extern, const int32_t *, CTYPE_TOUPPER)
-__libc_tsd_define (extern, const int32_t *, CTYPE_TOLOWER)
-
 # endif	/* Not NOT_IN_libc.  */
 #endif
 
