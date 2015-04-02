@@ -528,7 +528,7 @@ extern "C"
 
 
 
-		strcpy (&temp_cpu, STR(EM_NDS32));
+		strcpy (temp_cpu, STR(EM_NDS32));
 		if (EM_NDS32 != machine)
 		  {
 		    error_type = EFT_ERROR;
