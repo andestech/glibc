@@ -410,7 +410,7 @@ extern "C"
 		char temp[100];
 		char temp_cpu[10];
 		char temp_elf[10];
-		int n_error, n_warning;
+		int n_error;
 		int CPU_support;
 		char FPU_reg_elf, FPU_reg_cpu;
 		ELF_Fail_Type error_type;
@@ -419,7 +419,6 @@ extern "C"
 
 
 		n_error = 0;
-		n_warning = 0;
 
 		buf[0] = '\0';
 		*buf_status = 0;
@@ -781,13 +780,6 @@ extern "C"
 		}
 		else
 			strcat(buf, "NDS32 ELF checking pass\n");
-#if 0
-		if(n_warning)
-		{
-			sprintf(temp, "Total Warning: %d\n", n_warning);
-			strcat(buf, temp);
-		}
-#endif
 		return n_error;
 	} //end of elf_check
 
