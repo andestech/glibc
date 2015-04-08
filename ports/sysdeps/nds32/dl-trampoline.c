@@ -109,6 +109,12 @@ asm ("\n\
 
 // PLTENTER & PLTEXIT version
 #if 1
+#ifdef SHARED
+        #define _DL_CALL_PLTEXIT "_dl_call_pltexit@PLT"
+#else
+        #define _DL_CALL_PLTEXIT "_dl_call_pltexit"
+#endif
+        
 # define TRAMPOLINE_BODY_TEMPLATE_AUDIT(tramp_name, fixup_name) \
 asm ("\n\
 	! adjust stack\n\
@@ -178,7 +184,7 @@ asm ("\n\
 	sethi	$gp,	HI20(_GLOBAL_OFFSET_TABLE_+4);\n\
 	ori	$gp,	$gp,	LO12(_GLOBAL_OFFSET_TABLE_+8);\n\
 	add	$gp,	$ta,	$gp;\n\
-	bal	_dl_call_pltexit@PLT\n\
+	bal	"_DL_CALL_PLTEXIT"\n\
 	lmw.bim	$r0,	[$sp],	$r1\n\
 	lmw.bim	$r18,	[$sp],	$r20\n\
 	addi	$sp,	$sp,	20\n\
