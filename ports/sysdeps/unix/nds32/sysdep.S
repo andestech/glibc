@@ -20,7 +20,7 @@
 #define _ERRNO_H
 #include <bits/errno.h>
 
-#define USE_EMUTLS
+#undef USE_EMUTLS
 
 .text
 

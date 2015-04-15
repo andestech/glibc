@@ -19,9 +19,9 @@ libc {
     # r*
     res_init;
   }
-  GLIBC_2.2.5 {
+  GLIBC_2.2 {
     # r*
-    __res_state; __res_init; __res_nclose; __res_ninit; _res_hconf; __emutls_v.__resp;
+    __res_state; __res_init; __res_nclose; __res_ninit; _res_hconf;
   }
   GLIBC_PRIVATE {
     __gai_sigqueue;
