@@ -27,7 +27,12 @@
 #ifdef USE_EMUTLS
 .globl C_SYMBOL_NAME(__emutls_v.errno)
 #else
-.globl C_SYMBOL_NAME(errno)
+// .globl C_SYMBOL_NAME(errno)
+#ifndef NOT_IN_libc
+# define SYSCALL_ERROR_ERRNO __libc_errno
+#else
+# define SYSCALL_ERROR_ERRNO errno
+#endif
 #endif
 .globl syscall_error
 
@@ -126,7 +131,7 @@ syscall_error:
 #ifdef USE_EMUTLS
 L1:     .long C_SYMBOL_NAME(__emutls_v.errno)
 #else
-L1:	.long C_SYMBOL_NAME(errno)
+// L1:	.long C_SYMBOL_NAME(errno)
 #endif
 
 #else
@@ -137,7 +142,8 @@ L1:	.long C_SYMBOL_NAME(errno)
 #ifdef USE_EMUTLS
 	s.w	$r0, __emutls_v.errno@GOTOFF
 #else
-	s.w	$r0, errno@GOTOFF
+//	s.w	$r0, errno@GOTOFF
+	s.w	$r0, SYSCALL_ERROR_ERRNO@GOTOFF
 #endif
 	li	$r0, -1
 #endif
