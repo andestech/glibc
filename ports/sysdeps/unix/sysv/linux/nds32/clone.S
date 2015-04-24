@@ -72,22 +72,24 @@ ENTRY(__clone)
 
 	/* do the system call  */
 	or	$r0, $r2, $r2			! move $r0, $r2
-	__do_syscall(clone)
-	beqz	$r0, 4f
-	bltz	$r0, 5b
 
-	! parent
-	! swi     $r0, [$r4]                      ! Store child tid to pd->tid.
-	push	$r0
-	movi	$r0, CLONE_THREAD
-	and	$r0, $r2, $r0
-	beqz	$r0, 9f				! Set 
-	pop	$r0
-	beqz	$r4, 10f
-	swi	$r0, [$r4]
-	j	10f
-9:
-	pop	$r0
+	move    $r3, $r5
+	move    $r5, $r2                        ! Use $r5 to backup $r2
+						! The pt_regs is placed in $r5 in kerenl (sys_clone_wrapper)
+	move    $r2, $r4
+
+#ifdef PIC
+       lwi     $r4, [$sp+#0x8]
+#else
+       lwi     $r4, [$sp]
+#endif
+
+
+	__do_syscall(clone)
+	beqz    $r0, 4f
+	bltz    $r0, 5b
+
+
 10:
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
@@ -102,13 +104,11 @@ ENTRY(__clone)
         j       7f
 4:
         beqz    $r3, 6b
-	move    $r25, $r3
-	addi    $r25, $r25, 0x490               ! TLS_TCB_OFFSET + TLS_PRE_TCB_SIZE
 	movi	$r0, CLONE_THREAD		! Skip when CLONE_THREAD is set.
-	and	$r0, $r2, $r0
+	and	$r0, $r5, $r0
 	bnez	$r0, 7f
 	movi    $r0, CLONE_VM			! Value = -1 when CLONE_VM is set.
-	and	$r0, $r2, $r0
+	and	$r0, $r5, $r0
 	beqz	$r0, 8f
 	movi	$r0, -1
 	j	6b
