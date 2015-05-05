@@ -21,12 +21,13 @@
 
 #define ELF_MACHINE_NAME "NDS32"
 
+#include <tls.h> 
+#include <dl-tlsdesc.h>
 #include <string.h>
 #include <bits/linkmap.h>
 #include <fcntl.h>
 #include <ldsodefs.h>
 #include <nds32-elf.h>
-
 
 #define BUFLEN 1024
 
@@ -809,6 +810,41 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 	  break;
 	case R_NDS32_NONE:
           break;
+
+	case R_NDS32_TLS_DESC:
+	{
+	    struct tlsdesc volatile *td =
+	      (struct tlsdesc volatile *)reloc_addr;
+# ifndef RTLD_BOOTSTRAP
+		if(!sym)
+		{
+			td->argument.value = reloc->r_addend;
+			td->entry = _dl_tlsdesc_undefweak;
+		}
+		else
+# endif
+		{
+			value=sym->st_value + reloc->r_addend;			      
+#   ifndef RTLD_BOOTSTRAP
+#    ifndef SHARED
+			CHECK_STATIC_TLS (map, sym_map);
+#    else
+			if (!TRY_STATIC_TLS (map, sym_map))
+		  	{
+		    		td->argument.pointer = _dl_make_tlsdesc_dynamic(sym_map, value);
+		    		td->entry = _dl_tlsdesc_dynamic;
+		  	}
+			else
+#    endif
+#   endif
+		  	{
+		    		td->argument.value = value + sym_map->l_tls_offset;
+		    		td->entry = _dl_tlsdesc_return;
+		  	}
+		}
+	}
+	break;
+
 	default:
 	  _dl_reloc_bad_type (map, r_type, 0);
 	  break;
