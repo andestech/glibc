@@ -810,6 +810,21 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 	  break;
 	case R_NDS32_NONE:
           break;
+	case R_NDS32_TLS_TPOFF:
+	{
+#  ifdef RTLD_BOOTSTRAP
+		*reloc_addr = map->l_tls_offset + sym->st_value + reloc->r_addend;
+#  else
+		if (sym != NULL)
+		{
+			CHECK_STATIC_TLS (map, sym_map);
+			*reloc_addr = sym_map->l_tls_offset + sym->st_value + reloc->r_addend;
+		}
+		else
+			_dl_error_printf ("sym is NULL in R_NDS32_TLS_TPOFF\n");
+# endif
+	}
+	break;
 
 	case R_NDS32_TLS_DESC:
 	{
