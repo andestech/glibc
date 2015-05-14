@@ -26,15 +26,15 @@
 	.type	_dl_tlsdesc_return,#function
 	.align 2
 _dl_tlsdesc_return:
-	lwi	$r0	,[$r0]
+	add	$r0,	$r0,	$r25
 	ret
 
      /* This function is used for undefined weak TLS symbols, for
 	which the base address (i.e., disregarding any addend) should
 	resolve to NULL.
 
-	$r0 points to the TLS descriptor, such that $r0+4 points to
-	_dl_tlsdesc_undefweak itself, and $r0 holds the addend.
+	$r0 points to the TLS descriptor, such that $r0 points to
+	_dl_tlsdesc_undefweak itself, and $r0+4 holds the addend.
 	We return the addend minus the TP, such that, when the caller
 	adds TP, it gets the addend back.  If that's zero, as usual,
 	that's most likely a NULL pointer.  */
@@ -44,7 +44,6 @@ _dl_tlsdesc_return:
 	.type	_dl_tlsdesc_undefweak,#function
 	.align 2
 _dl_tlsdesc_undefweak:
-	sub	$r0,	$r25,	$r0
 	ret
 
 #ifdef SHARED
@@ -57,7 +56,7 @@ _dl_tlsdesc_undefweak:
 	C code, hand-optimized a little bit.
 
 ptrdiff_t
-_dl_tlsdesc_dynamic(struct tlsdesc *tdp)
+_dl_tlsdesc_dynamic(struct tlsdesc *tdp)(struct tlsdesc_dynamic_arg *td)
 {
        struct tlsdesc_dynamic_arg *td = tdp->argument.pointer;
        dtv_t *dtv = (dtv_t *)THREAD_DTV();
@@ -75,20 +74,19 @@ _dl_tlsdesc_dynamic(struct tlsdesc *tdp)
 
 _dl_tlsdesc_dynamic:
 	push	$lp
-	lwi	$r1,	[$r0 + #TLSDESC_GEN_COUNT]  	/* $r0=td $r1=td->gen_count*/
-	addi	$r2,	$r25,	 #DTV_OFFSET	    	/* $r2=&dtv[1]*/
+	lwi	$r1,	[$r0 +	#TLSDESC_GEN_COUNT]  	/* $r0=td $r1=td->gen_count*/
+	addi	$r2,	$r25,	#DTV_OFFSET	    	/* $r2=&dtv[0]*/
 	lwi	$r3,	[$r2]
 	sub	$r1,	$r1,	$r3
 	bgtz	$r1,	2f
-	lwi	$r3,	[$r0 + #TLSDESC_MODID]	    	/* r3=module id */
-	slli	$r3,	$r3,	#3
-	lw	$r3,	[$r2 +	$r3]		   	/* r3=&dtv[module id]*/
+	lwi	$r3,	[$r0 +	#TLSDESC_MODID]	    	/* r3=module id */
+	slli	$r3,	$r3,	#3			/* r3=module offset=module id*8(byte) */
+	lw	$r3,	[$r2 +	$r3]		   	/* r3=&dtc[module ID]=&dtv[0]+ module offset*/
 	movi	$r1,	#-1
 	beq	$r3,	$r1,	2f
-	lwi	$r1,	[$r0 + #TLSDESC_MODOFF]
+	lwi	$r1,	[$r0 +	#TLSDESC_MODOFF]
 	add	$r0,	$r3,	$r1
 1:	
-	sub 	$r0,	$r0,	$r25	/*$r0= symbol address - thread pointer*/
 	pop	$lp
 	ret
 2:

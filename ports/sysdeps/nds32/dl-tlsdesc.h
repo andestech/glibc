@@ -23,12 +23,13 @@
 /* Type used to represent a TLS descriptor in the GOT.  */
 struct tlsdesc
 {
+  ptrdiff_t (*entry)(struct tlsdesc *);
   union
     {
       void *pointer;
       long value;
     } argument;
-  ptrdiff_t (*entry)(struct tlsdesc *);
+  //ptrdiff_t (*entry)(struct tlsdesc *);
 };
 
 
