@@ -651,7 +651,10 @@ _dl_start_user:\n\
 #endif
 
 # define elf_machine_type_class(type) \
-  ((((type) == R_NDS32_JMP_SLOT) * ELF_RTYPE_CLASS_PLT)			      \
+  ((((type) == R_NDS32_JMP_SLOT) \
+	|| ((type)== R_NDS32_TLS_TPOFF) \
+	|| ((type)== R_NDS32_TLS_DESC) \
+	 * ELF_RTYPE_CLASS_PLT)			      \
    | (((type) == R_NDS32_COPY) * ELF_RTYPE_CLASS_COPY))
 
 
