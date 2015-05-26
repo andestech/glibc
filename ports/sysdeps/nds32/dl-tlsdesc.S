@@ -73,9 +73,8 @@ _dl_tlsdesc_dynamic(struct tlsdesc *tdp)(struct tlsdesc_dynamic_arg *td)
 	.align 2
 
 _dl_tlsdesc_dynamic:
-	push	$lp
 	lwi	$r1,	[$r0 +	#TLSDESC_GEN_COUNT]  	/* $r0=td $r1=td->gen_count*/
-	addi	$r2,	$r25,	#DTV_OFFSET	    	/* $r2=&dtv[0]*/
+	lwi	$r2,	[$r25 +	#DTV_OFFSET]	    	/* $r2=&dtv[0]*/
 	lwi	$r3,	[$r2]
 	sub	$r1,	$r1,	$r3
 	bgtz	$r1,	2f
@@ -87,9 +86,9 @@ _dl_tlsdesc_dynamic:
 	lwi	$r1,	[$r0 +	#TLSDESC_MODOFF]
 	add	$r0,	$r3,	$r1
 1:	
-	pop	$lp
 	ret
 2:
+	smw.adm $sp,[$sp],$sp,#0x6
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);	
 	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
@@ -98,6 +97,6 @@ _dl_tlsdesc_dynamic:
 	ori	$r15, $r15, lo12(__tls_get_addr@PLT);
 	add	$r15, $r15, $gp
 	jral 	$r15
-	pop	$gp
+	lmw.bim $sp,[$sp],$sp,#0x6
 	j	1b
 #endif
