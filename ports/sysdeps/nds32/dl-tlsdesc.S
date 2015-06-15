@@ -26,6 +26,7 @@
 	.type	_dl_tlsdesc_return,#function
 	.align 2
 _dl_tlsdesc_return:
+	lwi	$r0,	[$r0 + 	4]
 	add	$r0,	$r0,	$r25
 	ret
 
@@ -73,6 +74,7 @@ _dl_tlsdesc_dynamic(struct tlsdesc *tdp)(struct tlsdesc_dynamic_arg *td)
 	.align 2
 
 _dl_tlsdesc_dynamic:
+	lwi	$r0,	[$r0 + 	4]
 	lwi	$r1,	[$r0 +	#TLSDESC_GEN_COUNT]  	/* $r0=td $r1=td->gen_count*/
 	lwi	$r2,	[$r25 +	#DTV_OFFSET]	    	/* $r2=&dtv[0]*/
 	lwi	$r3,	[$r2]
