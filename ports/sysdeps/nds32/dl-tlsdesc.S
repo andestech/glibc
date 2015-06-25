@@ -26,7 +26,7 @@
 	.type	_dl_tlsdesc_return,#function
 	.align 2
 _dl_tlsdesc_return:
-	lwi	$r0,	[$r0 + 	4]
+	lwi	$r0,	[$r0	+ 4]
 	add	$r0,	$r0,	$r25
 	ret
 
@@ -74,7 +74,7 @@ _dl_tlsdesc_dynamic(struct tlsdesc *tdp)(struct tlsdesc_dynamic_arg *td)
 	.align 2
 
 _dl_tlsdesc_dynamic:
-	lwi	$r0,	[$r0 + 	4]
+	lwi	$r0,	[$r0	+ 4]
 	lwi	$r1,	[$r0 +	#TLSDESC_GEN_COUNT]  	/* $r0=td $r1=td->gen_count*/
 	lwi	$r2,	[$r25 +	#DTV_OFFSET]	    	/* $r2=&dtv[0]*/
 	lwi	$r3,	[$r2]
@@ -102,3 +102,50 @@ _dl_tlsdesc_dynamic:
 	lmw.bim $sp,[$sp],$sp,#0x6
 	j	1b
 #endif
+
+
+
+
+
+	.hidden _dl_tlsdesc_resolve_rela
+	.global	_dl_tlsdesc_resolve_rela
+	.type	_dl_tlsdesc_resolve_rela,#function
+	.pic
+	.align 2
+_dl_tlsdesc_resolve_rela:
+	smw.adm $r0,[$sp],$r0,#0x6
+	mov55	$r1,  $r3
+	mfusr 	$r15, $PC;
+	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);	
+	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
+	add   	$gp,  $r15, $gp;
+	sethi 	$r15, hi20(_dl_tlsdesc_resolve_rela_fixup@PLT);
+	ori	$r15, $r15, lo12(_dl_tlsdesc_resolve_rela_fixup@PLT);
+	add	$r15, $r15, $gp
+	jral 	$r15
+	lmw.bim $r0,[$sp],$r0,#0x6
+	jr	$r0
+
+
+
+	.hidden _dl_tlsdesc_resolve_hold
+	.global	_dl_tlsdesc_resolve_hold
+	.type	_dl_tlsdesc_resolve_hold,#function
+	.pic
+	.align 2
+_dl_tlsdesc_resolve_hold:
+
+	/*$r15 is used to adjust the $gp register
+	and get the address of _dl_tlsdesc_resolve_hold*/
+	smw.adm $r0,[$sp],$r0,#0x6
+	mfusr 	$r15, $PC;
+	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);
+	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
+	add   	$gp,  $r15, $gp;
+	sethi 	$r15, hi20(_dl_tlsdesc_resolve_hold_fixup@PLT);
+	ori	$r15, $r15, lo12(_dl_tlsdesc_resolve_hold_fixup@PLT);
+	add	$r15, $r15, $gp
+	move	$r1,  $r15; 		/* $r1= _dl_tlsdesc_resolve_hold addr*/
+	jral 	$r15
+	lmw.bim $r0,[$sp],$r0,#0x6
+	jr	$r0

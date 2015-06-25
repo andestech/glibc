@@ -505,6 +505,9 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 	got[2] = (Elf32_Addr) &_dl_runtime_resolve;
     }
 
+  if (l->l_info[ADDRIDX (DT_TLSDESC_GOT)] && lazy)
+    *(Elf32_Addr*)(D_PTR (l, l_info[ADDRIDX (DT_TLSDESC_GOT)]) + l->l_addr)
+      = (Elf32_Addr) &_dl_tlsdesc_resolve_rela;
   return lazy;
 }
 
@@ -904,6 +907,15 @@ elf_machine_lazy_rel (struct link_map *map,
 	*reloc_addr =
 	  map->l_mach.plt
 	  + (((Elf32_Addr) reloc_addr) - map->l_mach.gotplt) * 6;
+    }
+  else if (ELF32_R_TYPE (reloc->r_info) == R_NDS32_TLS_DESC)
+    {
+      struct tlsdesc volatile *td =
+	(struct tlsdesc volatile *)reloc_addr;
+
+      td->argument.pointer = (void*)reloc;
+      td->entry = (void*)(D_PTR (map, l_info[ADDRIDX (DT_TLSDESC_PLT)])
+			  + map->l_addr);
     }
   else if (ELF32_R_TYPE (reloc->r_info) == R_NDS32_NONE) {
     }

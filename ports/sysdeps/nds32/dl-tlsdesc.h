@@ -41,7 +41,7 @@ typedef struct dl_tls_index
 
 /* Type used as the argument in a TLS descriptor for a symbol that
    needs dynamic TLS offsets.  */
-typedef struct tlsdesc_dynamic_arg
+struct tlsdesc_dynamic_arg
 {
   tls_index tlsinfo;
   size_t gen_count;
@@ -49,9 +49,9 @@ typedef struct tlsdesc_dynamic_arg
 
 extern ptrdiff_t attribute_hidden
   _dl_tlsdesc_return(struct tlsdesc *),
-  _dl_tlsdesc_undefweak(struct tlsdesc *);
-// _dl_tlsdesc_lazy_resolver(struct tlsdesc *);
-// _dl_tlsdesc_resolve_hold(struct tlsdesc *),
+  _dl_tlsdesc_undefweak(struct tlsdesc *),
+  _dl_tlsdesc_resolve_rela(struct tlsdesc *),
+  _dl_tlsdesc_resolve_hold(struct tlsdesc *);
 
 # ifdef SHARED
 extern void *_dl_make_tlsdesc_dynamic (struct link_map *map, size_t ti_offset);

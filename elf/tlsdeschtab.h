@@ -147,7 +147,7 @@ _dl_tlsdesc_resolve_early_return_p (struct tlsdesc volatile *td, void *caller)
       return 1;
     }
 
-  //td->entry = _dl_tlsdesc_resolve_hold;
+  td->entry = _dl_tlsdesc_resolve_hold;
 
   return 0;
 }
