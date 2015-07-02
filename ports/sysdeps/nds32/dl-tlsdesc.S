@@ -114,7 +114,7 @@ _dl_tlsdesc_dynamic:
 	.align 2
 _dl_tlsdesc_resolve_rela:
 	smw.adm $r0,[$sp],$r0,#0x6
-	mov55	$r1,  $r3
+	lw	$r1,  [$r3]
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);	
 	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
@@ -124,7 +124,8 @@ _dl_tlsdesc_resolve_rela:
 	add	$r15, $r15, $gp
 	jral 	$r15
 	lmw.bim $r0,[$sp],$r0,#0x6
-	jr	$r0
+	lwi	$r1,  [$r0]
+	jr	$r1
 
 
 
@@ -148,4 +149,5 @@ _dl_tlsdesc_resolve_hold:
 	move	$r1,  $r15; 		/* $r1= _dl_tlsdesc_resolve_hold addr*/
 	jral 	$r15
 	lmw.bim $r0,[$sp],$r0,#0x6
-	jr	$r0
+	lwi	$r1,  [$r0]
+	jr	$r1
