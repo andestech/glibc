@@ -146,7 +146,7 @@ libc_hidden_def (_dl_addr)
 
 /* Return non-zero if ADDR lies within one of L's segments.  */
 int
-internal_function __attribute__ ((weak))
+internal_function
 _dl_addr_inside_object (struct link_map *l, const ElfW(Addr) addr)
 {
   int n = l->l_phnum;
