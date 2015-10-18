@@ -3257,7 +3257,7 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_NDS32_SDA15S0_RELA			34
 #define R_NDS32_RELA_GNU_VTINHERIT			35
 #define R_NDS32_RELA_GNU_VTENTRY			36
-                                                                                
+
 #define R_NDS32_GOT20			37
 #define R_NDS32_25_PLTREL			38
 #define R_NDS32_COPY			39
@@ -3290,7 +3290,7 @@ typedef Elf32_Addr Elf32_Conflict;
 #define R_NDS32_PLT_GOTREL_HI20			66
 #define R_NDS32_PLT_GOTREL_LO12			67
 #define R_NDS32_TLS_TPOFF			102
-#define R_NDS32_TLS_DESC			214
+#define R_NDS32_TLS_DESC			119
 
 /* Processor specific section indices.  These sections do not actually
    exist.  Symbols with a st_shndx field corresponding to one of these
