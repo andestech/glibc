@@ -117,6 +117,7 @@ enum
 /* Structure to describe FPU registers.
 typedef elf_fpregset_t	fpregset_t; */
 
+#if 1
 struct fpu_struct {
     unsigned long fs_regs[32];
     unsigned long long fd_regs[16];
@@ -126,7 +127,7 @@ struct fpu_struct {
 struct audio_struct {
     unsigned long auregs[32];
 };
-
+#endif
 /* Context to describe whole processor state.  */
 typedef struct
   {
@@ -134,10 +135,6 @@ typedef struct
     unsigned long error_code;
     unsigned long oldmask;
     gregset_t gregs;
-    unsigned long nds32_d1lo;
-    unsigned long nds32_d1hi;
-    unsigned long nds32_d0lo;
-    unsigned long nds32_d0hi;
     unsigned long nds32_ipc;
     unsigned long fault_address;
     /*

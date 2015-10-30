@@ -9,8 +9,7 @@
   r29 is gp - need to save
   r30 is ra - need to save
   r31 is sp - need to save
-  d0 - d1 may need to save if code movement, loaded into r16 - r19
-  so we need to save r6 - r14, r16 - r19 and r28 - r31
+  so we need to save r6 - r14 and r28 - r31
   The jmpbuf looks like this:
   r6
   r7
@@ -21,10 +20,6 @@
   r12
   r13
   r14
-  r16(d0.hi)
-  r17(d0.lo)
-  r18(d1.hi)
-  r19(d1.lo)
   fp
   gp
   ra
@@ -45,15 +40,8 @@
 ENTRY(__sigsetjmp)
 	move	$r2, $r0
 .off_16bit
-	! load multiplication registers
-	mfusr	$r16, $d0.hi
-	mfusr	$r17, $d0.lo
-	mfusr	$r18, $d1.hi
-	mfusr	$r19, $d1.lo
-
 	! save registers into buffer
-	smw.bim	$r6, [$r2], $r14
-	smw.bim	$r16, [$r2], $r19, #0xf
+	smw.bim	$r6, [$r2], $r14, #0xf
 .restore_16bit
 
 #ifdef NDS32_ABI_2FP

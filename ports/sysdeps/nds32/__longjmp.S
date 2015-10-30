@@ -9,8 +9,7 @@
   r29 is gp - need to save
   r30 is ra - need to save
   r31 is sp - need to save
-  d0 - d1 may need to save if code movement, loaded into r16 - r19
-  so we need to save r6 - r14, r16 - r19 and r28 - r31
+  so we need to save r6 - r14 and r28 - r31
   The jmpbuf looks like this:
   r6
   r7
@@ -21,10 +20,6 @@
   r12
   r13
   r14
-  r16(d0.hi)
-  r17(d0.lo)
-  r18(d1.hi)
-  r19(d1.lo)
   fp
   gp
   ra
@@ -45,14 +40,7 @@
 /* __longjmp (env[0].__jmpbuf, val ?: 1);  */
 ENTRY(__longjmp)
 	! restore registers
-	lmw.bim  $r6, [$r0], $r14
-	lmw.bim $r16, [$r0], $r19, #0xf
-
-	! restore multiplication registers
-	mtusr  $r16, $d0.hi
-	mtusr  $r17, $d0.lo
-	mtusr  $r18, $d1.hi
-	mtusr  $r19, $d1.lo
+	lmw.bim  $r6, [$r0], $r14, #0xf
 
 #ifdef NDS32_ABI_2FP
 	lwi.bi	$r20, [$r0], #4	/* Load $fpcfg.freg to $r20.  */

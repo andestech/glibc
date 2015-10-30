@@ -28,9 +28,8 @@
 typedef struct
   {
     /* Callee-saved registers: r6 - r14,
-     * preserved D0/D1: r16 - r19,
      * fp, gp, lp, sp: r28 - r31.  */
-    int __regs[17];
+    int __regs[13];
 
     /* Floating-Point Configuration Register.  */
     int __fpcfg;
@@ -42,11 +41,11 @@ typedef struct
 #endif
 
 /*
-r6 r7 r8 r9 r10 r11 r12 r13 r14 r16 r17 r18 r19 r28 r29 r30 r31
- 0  1  2  3   4   5   6   7   8   9  10  11  12  13  14  15  16
+r6 r7 r8 r9 r10 r11 r12 r13 r14 r28 r29 r30 r31
+ 0  1  2  3   4   5   6   7   8   9  10  11  12
 */
 
-#define __JMP_BUF_SP            16
+#define __JMP_BUF_SP            12
 
 /* Test if longjmp to JMPBUF would unwind the frame
    containing a local variable at ADDRESS.  */
