@@ -117,7 +117,6 @@ enum
 /* Structure to describe FPU registers.
 typedef elf_fpregset_t	fpregset_t; */
 
-#if 1
 struct fpu_struct {
     unsigned long fs_regs[32];
     unsigned long long fd_regs[16];
@@ -127,7 +126,13 @@ struct fpu_struct {
 struct audio_struct {
     unsigned long auregs[32];
 };
-#endif
+
+struct zol_struct {
+        unsigned long nds32_lc; /* $LC */
+        unsigned long nds32_le; /* $LE */
+        unsigned long nds32_lb; /* $LB */
+};
+
 /* Context to describe whole processor state.  */
 typedef struct
   {
@@ -145,6 +150,7 @@ typedef struct
     /* These two structs cause mcontext_t to align 8 */
     struct fpu_struct fpu; 
     struct audio_struct audio; 
+    struct zol_struct zol;
   } mcontext_t;
 
 /* Userlevel context.  */
