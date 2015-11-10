@@ -1,5 +1,5 @@
 
-#if defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2FP_PLUS)
 
 #include <libc-symbols.h>
 #include <sysdep.h>
@@ -18,7 +18,6 @@
         .hidden PREINIT_FUNCTION
 #endif
 
-	.abi_2fp
 	.pic
 	.section .init
 	.align	2

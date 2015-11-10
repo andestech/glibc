@@ -7,7 +7,7 @@
 ENTRY(__setcontext)
         move    $r4, $r0
 
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
 	lwi	$r0, [$r4 + UCONTEXT_FSREGS]
 	lwi.bi	$r20, [$r0], #4	/* Load $fpcfg.freg to $r20.  */
 
@@ -37,7 +37,7 @@ ENTRY(__setcontext)
 	fldi.bi	$fd5, [$r0], #8
 .LCFG0:
 	fldi.bi	$fd3, [$r0], #8
-#endif /* NDS32_ABI_2FP */
+#endif /* NDS32_ABI_2FP_PLUS */
 
 	/* sigprocmask (SIG_BLOCK, &sc->sc_mask, NULL).  */
 	move    $r0, SIG_SETMASK

@@ -35,7 +35,7 @@
 #define JB_LP   15
 #define JB_SP   16
 
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
 #define JB_SIZE 48
 #else
 #define JB_SIZE 18

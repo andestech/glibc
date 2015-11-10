@@ -125,9 +125,9 @@ ENTRY(__clone)
 	pop	$r0				! arg
 
 
-#if !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP__)
+#if !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP_PLUS__)
 	addi	$sp, $sp, -24
-#endif /* !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP__)  */
+#endif /* !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP_PLUS__)  */
 
 	! use $r15 in case _exit is PIC
 #ifdef __NDS32_N1213_43U1H__
@@ -135,9 +135,9 @@ ENTRY(__clone)
 #endif /* __NDS32_N1213_43U1H__  */
 	bral	$r1
 
-#if !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP__)
+#if !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP_PLUS__)
 	addi	$sp, $sp, 24
-#endif /* !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP__)  */
+#endif /* !defined(__NDS32_ABI_2__) && !defined(__NDS32_ABI_2FP_PLUS__)  */
 
 	! use $r15 in case _exit is PIC
 #ifdef PIC

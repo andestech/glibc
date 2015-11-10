@@ -85,7 +85,7 @@ syscall_error:
 	push	$r0
 #endif
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
 #else
 	addi	$sp,	$sp, -24
 #endif
@@ -95,7 +95,7 @@ syscall_error:
 #else
 	bal	C_SYMBOL_NAME(__errno_location)
 #endif	
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
 #else
 	addi	$sp,	$sp, 24
 #endif

@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include "dynamic-link.h"
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
 # define STACK_PUSH
 # define STACK_POP
 # define STACK_PUSH_AUDIT

@@ -49,7 +49,7 @@ ENTRY(__getcontext)
         bnez    $r0, 1f
 
 
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
 	lwi	$r2, [$r4 + UCONTEXT_FSREGS]
 /* Process for FPU registers.  */
 	fmfcfg	$r20	/* Keep $fpcfg in $r20.  */
@@ -83,7 +83,7 @@ ENTRY(__getcontext)
 	fsdi.bi	$fd5, [$r2], #8
 .LCFG0:
 	fsdi.bi	$fd3, [$r2], #8
-#endif /* NDS32_ABI_2FP */
+#endif /* NDS32_ABI_2FP_PLUS */
 
 	/* Set __getcontext return value to 0.  */
         xor      $r0, $r0, $r0

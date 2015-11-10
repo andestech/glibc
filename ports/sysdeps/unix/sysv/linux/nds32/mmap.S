@@ -36,7 +36,7 @@ ENTRY (__mmap)
 
    
    // reserve space for r0, r1
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
 #else
    addi  $sp, $sp, -8
 #endif   
@@ -46,7 +46,7 @@ ENTRY (__mmap)
 
    syscall SYS_ify(mmap2)
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
 #else
    addi  $sp, $sp, 8
 #endif   

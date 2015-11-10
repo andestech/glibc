@@ -24,7 +24,7 @@
   gp
   ra
   sp
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
   ($fpcfg.freg)
   (callee-saved FPU regs)
 #endif
@@ -42,7 +42,7 @@ ENTRY(__longjmp)
 	! restore registers
 	lmw.bim  $r6, [$r0], $r14, #0xf
 
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
 	lwi.bi	$r20, [$r0], #4	/* Load $fpcfg.freg to $r20.  */
 
 	/* Case switch for $r20 as $fpcfg.freg.  */
@@ -71,7 +71,7 @@ ENTRY(__longjmp)
 	fldi.bi	$fd5, [$r0], #8
 .LCFG0:
 	fldi.bi	$fd3, [$r0], #8
-#endif /* NDS32_ABI_2FP */
+#endif /* NDS32_ABI_2FP_PLUS */
 
 
 	! return error code; make sure error code is not 0

@@ -1,9 +1,8 @@
 
-#if defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2FP_PLUS)
 
 #include <sysdep.h>
 
-	.abi_2fp
 	.pic
 
 	.section .init

@@ -24,7 +24,7 @@
   gp
   ra
   sp
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
   ($fpcfg.freg)
   (callee-saved FPU regs)
 #endif
@@ -44,7 +44,7 @@ ENTRY(__sigsetjmp)
 	smw.bim	$r6, [$r2], $r14, #0xf
 .restore_16bit
 
-#ifdef NDS32_ABI_2FP
+#ifdef NDS32_ABI_2FP_PLUS
 /* Process for FPU registers.  */
 	fmfcfg	$r20	/* Keep $fpcfg in $r20.  */
 	slli	$r20, $r20, #28
@@ -77,7 +77,7 @@ ENTRY(__sigsetjmp)
 	fsdi.bi	$fd5, [$r2], #8
 .LCFG0:
 	fsdi.bi	$fd3, [$r2], #8
-#endif /* NDS32_ABI_2FP */
+#endif /* NDS32_ABI_2FP_PLUS */
 
 
 /* Make a tail call to __sigjmp_save.  */

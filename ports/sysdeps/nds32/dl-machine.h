@@ -35,7 +35,7 @@ static nds32_elfinfo_t target ;
 
 #if defined(NDS32_ABI_2)
 const static int _default_ABI_ = E_NDS_ABI_AABI ;
-#elif defined(NDS32_ABI_2FP)
+#elif defined(NDS32_ABI_2FP_PLUS)
 const static int _default_ABI_ = E_NDS_ABI_V2FP ;
 #else
 const static int _default_ABI_ = E_NDS_ABI_V1 ;
@@ -514,7 +514,7 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 #define ELF_MACHINE_JMP_SLOT    R_NDS32_JMP_SLOT
 #endif
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP)
+#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
 # define STACK_PUSH
 # define STACK_POP
 #else
