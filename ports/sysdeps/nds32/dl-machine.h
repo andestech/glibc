@@ -355,7 +355,7 @@ elf_machine_matches_host(const Elf32_Ehdr *ehdr)
   /* check ABI first */
   if (_default_ABI_ != (ehdr->e_flags & EF_NDS_ABI))
     {
-      _dl_error_printf ("ld.so: Shared Object ABI mismatch");
+      _dl_error_printf ("ld.so: Shared Object ABI mismatch\n");
       return 0;
     }
 
