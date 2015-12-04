@@ -21,7 +21,7 @@
 
 #define ELF_MACHINE_NAME "NDS32"
 
-#include <tls.h> 
+#include <tls.h>
 #include <dl-tlsdesc.h>
 #include <string.h>
 #include <bits/linkmap.h>
@@ -129,9 +129,6 @@ get_cpu_reg_info(REG_INDEX reg_num)
       len = __libc_read (fd, buf, 8000);
       __close (fd);
       buf[len] = 0;
-#if 0
-      _dl_error_printf( buf);
-#endif
 
       // find feature string
       p1 = strstr (buf, "Features");
@@ -148,10 +145,6 @@ get_cpu_reg_info(REG_INDEX reg_num)
           p1 = strtok (p1, " :");
           while (p1)
             {
-#if 0
-              _dl_error_printf( p1);
-              _dl_error_printf( "\r\n");
-#endif
               for (i = 0; i < sizeof(cpu_feature_token) / sizeof(char *); i++)
                 {
                   if (!strcmp (cpu_feature_token[i], p1))
@@ -309,7 +302,6 @@ reg_read(unsigned int index)
   len = __libc_read (fd, buf, 16);
   __close (fd);
   buf[len] = 0;
-  //      _dl_error_printf(buf);
 
   p = strstr (buf, "0x");
   if (p)
@@ -366,7 +358,6 @@ elf_machine_matches_host(const Elf32_Ehdr *ehdr)
       // ET: 121109 per kelly's request
       // no checking, just return OK
       return 1;
-      // fd = __open ("/elf_core_checking", O_RDONLY) ;
     }
 
   if (fd != -1)
@@ -388,7 +379,6 @@ elf_machine_matches_host(const Elf32_Ehdr *ehdr)
 
   if (err)
     {
-  //    nds32_elf_get_errstr (buf, 8000, err);
       _dl_error_printf (buf);
       return 0;
     }
@@ -409,8 +399,6 @@ elf_machine_dynamic (void)
   /* This produces a GOTOFF reloc that resolves to some offset at link time, so in
      fact just loads from the GOT register directly.  By doing it without
      an asm we can let the compiler choose any register.  */
-//   extern Elf32_Addr __attribute__((visibility("hidden"))) GLOBAL_OFFSET_TABLE_[];
-//	return GLOBAL_OFFSET_TABLE_[0]	;
   extern const Elf32_Addr _GLOBAL_OFFSET_TABLE_[] attribute_hidden;
   return _GLOBAL_OFFSET_TABLE_[0];
 }
@@ -435,7 +423,7 @@ static inline Elf32_Addr __attribute__ ((unused))
 elf_machine_dynamic (void)
 {
 	Elf32_Addr link_addr ;
-	
+
 	asm ( "l.w %0, _GLOBAL_OFFSET_TABLE_@GOTOFF": "=r" (link_addr) ) ;
 	return link_addr ;
 }
@@ -521,9 +509,6 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 # define STACK_PUSH	"addi $sp, $sp,	-24"
 # define STACK_POP	"addi $sp, $sp,	24"
 #endif
-// #endif /* !dl_machine_h */
-
-// #ifdef RESOLVE_MAP
 
 
 /* Mask identifying addresses reserved for the user program,
@@ -691,16 +676,11 @@ elf_machine_plt_value (struct link_map *map, const Elf32_Rela *reloc,
   return value + reloc->r_addend ;
 }
 
-// old #endif /* !dl_machine_h */
-
-
-// shared.
 /* Names of the architecture-specific auditing callback functions.  */
 #define ARCH_LA_PLTENTER nds32_gnu_pltenter
 #define ARCH_LA_PLTEXIT nds32_gnu_pltexit
 
 #endif /* !dl_machine_h */
-// #endif /* RESOLVE_MAP  */
 
 
 #define ELF_MACHINE_NO_REL 1
@@ -844,7 +824,7 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 		else
 # endif
 		{
-			value=sym->st_value + reloc->r_addend;			      
+			value=sym->st_value + reloc->r_addend;
 #   ifndef RTLD_BOOTSTRAP
 #    ifndef SHARED
 			CHECK_STATIC_TLS (map, sym_map);
