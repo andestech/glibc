@@ -85,6 +85,7 @@ extern "C"
 #define E_NDS_ABI_V2        0x00000020
 #define E_NDS_ABI_V2FP      0x00000030
 #define E_NDS_ABI_AABI      0x00000040
+#define E_NDS_ABI_V2FP_PLUS 0x00000050
 
 	/* ---------------------------------------------------------------------------- */
 	/* This flag signifies the version of Andes ELF                                 */

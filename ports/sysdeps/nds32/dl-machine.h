@@ -35,8 +35,10 @@ static nds32_elfinfo_t target ;
 
 #if defined(NDS32_ABI_2)
 const static int _default_ABI_ = E_NDS_ABI_AABI ;
-#elif defined(NDS32_ABI_2FP_PLUS)
+#elif defined(NDS32_ABI_2FP)
 const static int _default_ABI_ = E_NDS_ABI_V2FP ;
+#elif defined(NDS32_ABI_2FP_PLUS)
+const static int _default_ABI_ = E_NDS_ABI_V2FP_PLUS ;
 #else
 const static int _default_ABI_ = E_NDS_ABI_V1 ;
 #endif
