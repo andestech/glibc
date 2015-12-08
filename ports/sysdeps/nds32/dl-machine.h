@@ -705,28 +705,10 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
   const unsigned int r_type = ELF32_R_TYPE (reloc->r_info);
   Elf32_Addr value;
 
-#define COPY_UNALIGNED_WORD(swp, twp, align) \
+#define COPY_UNALIGNED_WORD(swp, twp) \
   { \
-    void *__s = (swp), *__t = (twp); \
-    unsigned char *__s1 = __s, *__t1 = __t; \
-    unsigned short *__s2 = __s, *__t2 = __t; \
-    unsigned long *__s4 = __s, *__t4 = __t; \
-    switch ((align)) \
-    { \
-    case 0: \
-      *__t4 = *__s4; \
-      break; \
-    case 2: \
-      *__t2++ = *__s2++; \
-      *__t2 = *__s2; \
-      break; \
-    default: \
-      *__t1++ = *__s1++; \
-      *__t1++ = *__s1++; \
-      *__t1++ = *__s1++; \
-      *__t1 = *__s1; \
-      break; \
-    } \
+    typeof (swp) __tmp = __builtin_nds32_unaligned_load_w (swp); \
+    __builtin_nds32_unaligned_store_w (twp, __tmp); \
   }
 
   if (__builtin_expect (r_type == R_NDS32_RELATIVE, 0))
@@ -739,12 +721,10 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 	    value = map->l_addr + reloc->r_addend;
 	  else
 	    {
-	      COPY_UNALIGNED_WORD (reloc_addr_arg, &value,
-				   (int) reloc_addr_arg & 3);
+	      COPY_UNALIGNED_WORD (reloc_addr_arg, &value);
 	      value += map->l_addr;
 	    }
-	  COPY_UNALIGNED_WORD (&value, reloc_addr_arg,
-			       (int) reloc_addr_arg & 3);
+	  COPY_UNALIGNED_WORD (&value, reloc_addr_arg);
 	}
     }
 #ifndef RTLD_BOOTSTRAP
@@ -792,8 +772,7 @@ elf_machine_rela (struct link_map *map, const ElfW(Rela) *reloc,
 	  *reloc_addr = value;
 	  break;
         case R_NDS32_32_RELA:
-	  COPY_UNALIGNED_WORD (&value, reloc_addr,
-			       (int) reloc_addr & 3);
+	  COPY_UNALIGNED_WORD (&value, reloc_addr);
 	  break;
 	case R_NDS32_NONE:
           break;
@@ -865,10 +844,10 @@ elf_machine_rela_relative (Elf32_Addr l_addr, const Elf32_Rela *reloc,
     value = l_addr + reloc->r_addend;
   else
     {
-      COPY_UNALIGNED_WORD (reloc_addr_arg, &value, (int) reloc_addr_arg & 3);
+      COPY_UNALIGNED_WORD (reloc_addr_arg, &value);
       value += l_addr;
     }
-  COPY_UNALIGNED_WORD (&value, reloc_addr_arg, (int) reloc_addr_arg & 3);
+  COPY_UNALIGNED_WORD (&value, reloc_addr_arg);
 
 #undef COPY_UNALIGNED_WORD
 }
