@@ -58,11 +58,17 @@ ENTRY(__clone)
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
 	la	$r15, C_SYMBOL_NAME(__syscall_error@PLT)
+	push	$lp
+	addi	$sp, $sp, -4
+	jral	$r15
+	addi	$sp, $sp, 4
+	pop	$lp
 	popm	$fp, $gp
+	ret
 #else /* ! PIC  */
 	la	$r15, C_SYMBOL_NAME(__syscall_error)
-#endif /* ! PIC  */
 	jr	$r15
+#endif /* ! PIC  */
 
 2:
 	/* Child's $sp will be $r1, push to child's stack only.  */
