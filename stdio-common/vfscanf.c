@@ -1983,7 +1983,7 @@ _IO_vfscanf_internal (_IO_FILE *s, const char *format, _IO_va_list argptr,
 	      else if (got_e && wp[wpsize - 1] == exp_char
 		       && (c == L_('-') || c == L_('+')))
 		ADDW (c);
-              else if (got_digit && !got_e && (c | 0x20) == exp_char) {
+              else if (c == exp_char) {
                  ADDW (exp_char);
                  got_e = got_dot = 1;
               }
