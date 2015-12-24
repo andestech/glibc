@@ -8,10 +8,13 @@
 #endif
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C"
 {
+#else
+#include <stdbool.h>
 #endif //#ifdef __cplusplus
 
 
@@ -19,8 +22,8 @@ extern "C"
 	{
 		EHFF_ARCH_VER		= 0xF0000000, EHFF_ARCH_VER_SHIFT	= 28,
 		//EHFF_RESERVED		= 0x08000000,
-		EHFF_HAS_PIC		= 0x04000000,
-		//EHFF_RESERVED		= 0x02000000,
+		EHFF_HAS_ZOL		= 0x04000000,
+		EHFF_ISA_DSP		= 0x02000000,
 		EHFF_ISA_FPU_MAC	= 0x01000000,
 		EHFF_FPU_REG		= 0x00C00000, EHFF_FPU_REG_SHIFT	= 22,
 		EHFF_ISA_L2C		= 0x00200000,
@@ -162,14 +165,6 @@ extern "C"
 		"big"
 	};
 
-
-
-
-	static const char *NEC_MSG_ISA[2] =
-	{
-		"OFF",
-		"ON"
-	};
 #define EM_NDS32 	    167
 #if defined elf_check_swap_2 || defined elf_check_swap_4
 #error "ERROR : elf_check_swap_2 and elf_check_swap_4 are multiple defined"
@@ -199,6 +194,10 @@ extern "C"
 #define MSC_CFG_IFC             0x00080000
 #define MSC_CFG_MCU             0x00100000
 #define MSC_CFG_EX9IT           0x01000000
+#define MSC_CFG_MSC_EXT         0xc0000000
+
+#define MSC_CFG2_DSPPF          0x00000018
+#define MSC_CFG2_ZOL				  0x00000020
 
 #define MMU_CFG_DE              0x04000000
 
@@ -246,68 +245,125 @@ extern "C"
 		EFT_ERROR
 	}ELF_Fail_Type;
 
+	static inline void NEC_itoa(unsigned int value, char *buf, const unsigned int base)
+	{
+		char temp[10] = "\0", ch;
+		int len = 1, index;
 
+		while(value > 0)
+		{
+			ch = value%base;
+			value = value/base;
+			if(ch >= 10)
+				ch = ch+'a'-10;
+			else
+				ch = ch+'0';
+			temp[len++] = ch;
+		}
+		len--;
+
+		index = len;
+		while(index >= 0)
+		{
+			buf[index] = temp[len-index];
+			index--;
+		}
+	}
+
+	static inline void NEC_format(char *buf, unsigned int width)
+	{
+		unsigned int len = strlen(buf);
+		memmove(buf+(width-len), buf, len+1);
+		memset(buf, ' ', (width-len));
+	}
+
+	static inline void NEC_sprintf(char *buf, const char *str, ...)
+	{
+		int width, len = 0;
+		va_list ap;
+		char token, temp[100];
+		buf[0] = '\0';
+
+
+		va_start(ap, str);
+		while(*str != '\0')
+		{
+			if(*str != '%')
+				buf[len++] = *str;
+			else	//*str == '%'
+			{
+				token = *(++str);
+
+				width = 0;
+				while(token >= '0' && token <= '9')
+				{
+					width *= 10;
+					width += token-'0';
+					token = *(++str);
+				}
+
+				switch(token)
+				{
+					case 'd':
+						NEC_itoa(va_arg(ap, unsigned int), temp, 10);
+						break;
+					case 'x':
+						NEC_itoa(va_arg(ap, unsigned int), temp, 16);
+						break;
+					case 's':
+						strcpy(temp, va_arg(ap, char *));
+						break;
+				}
+
+				if(width != 0)
+					NEC_format(temp, width);
+
+				buf[len++] = '\0';
+				strcat(buf, temp);
+				len = strlen(buf);
+			}
+			str++;
+		}
+		buf[len] = '\0';
+	}
+
+	//NDS32 strcat for avoiding buf overflow
+	static inline void NEC_strcat_safety(char *destination, unsigned int destination_size, char *source)
+	{
+		strncat(destination, source, destination_size - strlen(destination) - 1);
+	}
 
 	//NDS32 Elf Check print
-	static inline void NEC_print(char *buf, ELF_Fail_Type type, const char *name, char *cpu, char *elf, const char *error_message)
-	  {
-	    char temp[100];
-	    switch(type)
-	      {
-	      case EFT_NONE:
-		//		sprintf(buf, "\t | %9s | %9s | %14s\n", cpu, elf, name);
-		*buf = '\0';
-		strcat (buf, "\t | ");
-		strcat (buf, cpu);
-		strcat (buf, " | ");
-		strcat (buf, elf);
-		strcat (buf, " | ");
-		strcat (buf, name);
-		strcat (buf, "\n");
-		break;
-	      case EFT_WARNING:
-		//		sprintf(buf, "\t?| %9s | %9s | %14s Warning: %s\n", cpu, elf, name, error_message);
-		*buf = '\0';
-		strcat (buf, "\t?| ");
-		strcat (buf, cpu);
-		strcat (buf, " | ");
-		strcat (buf, elf);
-		strcat (buf, " | ");
-		strcat (buf, name);
-		strcat (buf, " Warning :");
-		strcat (buf, error_message);
-		strcat (buf, "\n");
-		break;
-	      case EFT_ERROR:
-		//		sprintf(buf, "\t!| %9s | %9s | %14s Error: %s\n", cpu, elf, name, error_message);
-		*buf = '\0';
-		strcat (buf, "\t?| ");
-		strcat (buf, cpu);
-		strcat (buf, " | ");
-		strcat (buf, elf);
-		strcat (buf, " | ");
-		strcat (buf, name);
-		strcat (buf, " Error :");
-		strcat (buf, error_message);
-		strcat (buf, "\n");
-		break;
-	      }
-	    strcat(buf, temp);
-	  }
-
-	static inline int NEC_check_bool(char *buf, ELF_Fail_Type type, const char *isa, int cpu, int elf)
+	static inline void NEC_print(char *buf, unsigned int len, ELF_Fail_Type type, const char *name, const char *cpu, const char *elf, const char *error_message)
 	{
-		int code;
-		if(cpu) cpu = 1;
-		if(elf) elf = 1;
-		if((cpu == 0) && (elf == 1))
+		char temp[100];
+		switch(type)
+		{
+			case EFT_NONE:
+				NEC_sprintf(temp, "\t | %9s | %9s | %14s\n", cpu, elf, name);
+				break;
+			case EFT_WARNING:
+				NEC_sprintf(temp, "\t?| %9s | %9s | %14s Warning: %s\n", cpu, elf, name, error_message);
+				break;
+			case EFT_ERROR:
+				NEC_sprintf(temp, "\t!| %9s | %9s | %14s Error: %s\n", cpu, elf, name, error_message);
+				break;
+		}
+		NEC_strcat_safety(buf, len, temp);
+	}
+
+	static inline bool NEC_check_bool(char *buf, unsigned int len, ELF_Fail_Type type, const char *isa, bool cpu, bool elf)
+	{
+		bool code;
+		const char *NEC_MSG_ISA[2] = { "OFF", "ON" };
+		if(!cpu && elf)
 			code = 1;
 		else
 		{
 			code = 0;
 			type = EFT_NONE;
 		}
-		NEC_print(buf, type, isa, NEC_MSG_ISA[cpu], NEC_MSG_ISA[elf], "Not supported by CPU");
+		NEC_print(buf, len, type, isa, NEC_MSG_ISA[cpu], NEC_MSG_ISA[elf], "Not supported by CPU");
 		return code;
 	}
 
@@ -315,7 +371,7 @@ extern "C"
 	{
 		switch(elf_ver)
 		{
-			case EHFF_ELF_VER_1_3_0:	
+			case EHFF_ELF_VER_1_3_0:
 				switch(arch_ver)
 				{
 					case EHFF_ARCH_VER_V1:
@@ -323,7 +379,7 @@ extern "C"
 					default:
 						return EFT_ERROR;
 				}
-			case EHFF_ELF_VER_1_3_1:	
+			case EHFF_ELF_VER_1_3_1:
 				switch(arch_ver)
 				{
 					case EHFF_ARCH_VER_V1:
@@ -333,7 +389,7 @@ extern "C"
 					default:
 						return EFT_ERROR;
 				}
-			case EHFF_ELF_VER_1_4_0:	
+			case EHFF_ELF_VER_1_4_0:
 				switch(arch_ver)
 				{
 					case EHFF_ARCH_VER_V1:
@@ -345,6 +401,7 @@ extern "C"
 						return EFT_ERROR;
 				}
 		}
+		return EFT_ERROR;
 	}
 
 
@@ -389,6 +446,7 @@ extern "C"
 						return EFT_ERROR;
 				}
 		}
+		return EFT_ERROR;
 	}
 
 	// buf  : buffer of char*, put Target Isa Info into *buf
@@ -397,38 +455,37 @@ extern "C"
 	//          0 : ok
 	//          1 : overflow
 #define TARGET_ISA_INFO_LEN 2000
-#define STR(tok) STR_EXPAND(tok)
-#define STR_EXPAND(tok) #tok
 	static inline unsigned int elf_check (unsigned char *ehdr, CALLBACK_FUNC reg_read_callback, char *buf, unsigned int len, unsigned int *buf_status)
 	{
-		unsigned int SR_msc_cfg, SR_cpu_ver, SR_mmu_cfg, fpcfg, fucop_exist, fpu_mount;
+		unsigned int SR_msc_cfg, SR_msc_cfg2 = 0, SR_cpu_ver, SR_mmu_cfg, fpcfg, fucop_exist, fpu_mount;
 		unsigned int CPU_DIV_DX_ISA, CPU_MAC_DX_ISA;
 		unsigned int eflag, ELF_arch_ver, ELF_elf_ver, CPU_arch_ver;
 		unsigned short machine;
-		char big_endian_elf, big_endian_cpu;
+		unsigned char big_endian_elf = 0, big_endian_cpu;
 
 		char temp[100];
 		char temp_cpu[10];
 		char temp_elf[10];
-		int n_error;
+		int n_error, n_warning;
 		int CPU_support;
-		char FPU_reg_elf, FPU_reg_cpu;
+		unsigned char FPU_reg_elf, FPU_reg_cpu;
 		ELF_Fail_Type error_type;
 		unsigned int is_N1213HC;
 
 
 
 		n_error = 0;
+		n_warning = 0;
 
 		buf[0] = '\0';
 		*buf_status = 0;
-		if (len < TARGET_ISA_INFO_LEN)
-			*buf_status = 1;
 
 		SR_cpu_ver = reg_read_callback(CPU_SR_INDEX(0,0,0));
 		SR_msc_cfg = reg_read_callback(CPU_SR_INDEX(0,4,0));
 		SR_mmu_cfg = reg_read_callback(CPU_SR_INDEX(0,3,0));
 
+		if (SR_msc_cfg & MSC_CFG_MSC_EXT)
+			SR_msc_cfg2 = reg_read_callback(CPU_SR_INDEX(0,4,1));
 
 		switch(*((char*)(ehdr+5)))
 		{
@@ -438,8 +495,6 @@ extern "C"
 			case 2:
 				big_endian_elf = 1;
 				break;
-			default:
-				return 1;
 		}
 
 		if(SR_mmu_cfg & MMU_CFG_DE)
@@ -490,32 +545,24 @@ extern "C"
 		  3.Machine check
 		 */
 		if(ELF_elf_ver > EHFF_ELF_VER_1_4_0)
-		  {
-		    *temp='\0';
-		    strcat (temp, "Error: unsupport ELF version\n");
-		    //sprintf(temp, "Error: unsupport ELF version: 0x%x\n", ELF_elf_ver);
-		    strcat(buf, temp);
-		    return 1;
-		  }
-//		sprintf(temp, "ELF version: %s\n", EHFF_ELF_VER_MSG[ELF_elf_ver]);
-//		strcat(buf, temp);
-		strcat (buf, "Elf version:");
-		strcat (buf, EHFF_ELF_VER_MSG[ELF_elf_ver]);
-		strcat (buf, "\n");
+		{
+			NEC_sprintf(temp, "Error: unsupport ELF version: 0x%x\n", ELF_elf_ver);
+			NEC_strcat_safety(buf, len, temp);
+			return 1;
+		}
+		NEC_sprintf(temp, "ELF version: %s\n", EHFF_ELF_VER_MSG[ELF_elf_ver]);
+		NEC_strcat_safety(buf, len, temp);
 
 
 		if(elf_ver_and_arch_ver_compatibility_check(ELF_elf_ver, ELF_arch_ver) == EFT_ERROR)
-		  {
-		    //sprintf(temp, "Error: architecture version is not supported in this ELF version: %s\n", EHFF_ARCH_VER_MSG[ELF_arch_ver]);
-		    *temp='\0';
-		    strcat (temp, "Error: architecture version is not supported in this ELF version\n");
-		    strcat(buf, temp);
-		    return 1;
-		  }
+		{
+			NEC_sprintf(temp, "Error: architecture version is not supported in this ELF version: %s\n", EHFF_ARCH_VER_MSG[ELF_arch_ver]);
+			NEC_strcat_safety(buf, len, temp);
+			return 1;
+		}
 
-		//	sprintf(temp, "\t   %9s   %9s  \n", "CPU", "ELF");
-		//	strcat(buf, temp);
-		strcat( buf, "\t   \tCPU   \tELF  \n");
+		NEC_sprintf(temp, "\t   %9s   %9s  \n", "CPU", "ELF");
+		NEC_strcat_safety(buf, len, temp);
 		if(big_endian_cpu != big_endian_elf)
 		{
 			error_type = EFT_ERROR;
@@ -523,33 +570,27 @@ extern "C"
 		}
 		else
 			error_type = EFT_NONE;
-		NEC_print(buf, error_type, "endianess", NEC_MSG_endian[big_endian_cpu],  NEC_MSG_endian[big_endian_elf], "endianess mismatch");
+		NEC_print(buf, len, error_type, "endianess", NEC_MSG_endian[big_endian_cpu],  NEC_MSG_endian[big_endian_elf], "endianess mismatch");
 
 
 
 
-		strcpy (temp_cpu, STR(EM_NDS32));
 		if (EM_NDS32 != machine)
-		  {
-		    error_type = EFT_ERROR;
-		    n_error++;
-		    strcpy (temp_elf, "unknow");
-		  }
+		{
+			error_type = EFT_ERROR;
+			n_error++;
+		}
 		else
-
-		  {
-		    error_type = EFT_NONE;
-		    strcpy (temp_elf, temp_cpu);
-		  }
-//		sprintf(temp_cpu, "%d", EM_NDS32);
-//		sprintf(temp_elf, "%d", machine);
-		NEC_print(buf, error_type, "machine", temp_cpu, temp_elf, "wrong machine");
+			error_type = EFT_NONE;
+		NEC_sprintf(temp_cpu, "%d", EM_NDS32);
+		NEC_sprintf(temp_elf, "%d", machine);
+		NEC_print(buf, len, error_type, "machine", temp_cpu, temp_elf, "wrong machine");
 
 
 		error_type = arch_ver_check(CPU_arch_ver, ELF_arch_ver);
 		if(error_type == EFT_ERROR)
 			n_error++;
-		NEC_print(buf, error_type, "BASELINE ISA", EHFF_ARCH_VER_MSG[CPU_arch_ver], EHFF_ARCH_VER_MSG[ELF_arch_ver], "BASELINE ISA mismatch");
+		NEC_print(buf, len, error_type, "BASELINE ISA", EHFF_ARCH_VER_MSG[CPU_arch_ver], EHFF_ARCH_VER_MSG[ELF_arch_ver], "BASELINE ISA mismatch");
 
 		/*Prepare reference variables
 
@@ -559,27 +600,27 @@ extern "C"
 
 		CPU_MAC_DX_ISA = 0;
 		CPU_DIV_DX_ISA = 0;
-		if (is_N1213HC) 
+		if (is_N1213HC)
 		{
-			if (SR_msc_cfg & MSC_CFG_MAC) 
+			if (SR_msc_cfg & MSC_CFG_MAC)
 				CPU_MAC_DX_ISA = 1;
-			if (SR_msc_cfg & MSC_CFG_DIV) 
+			if (SR_msc_cfg & MSC_CFG_DIV)
 				CPU_DIV_DX_ISA = 1;
-		} 
-		else 
+		}
+		else
 		{
 			switch(CPU_arch_ver)
 			{
 				case EHFF_ARCH_VER_V1:
-					if (SR_msc_cfg & MSC_CFG_MAC) 
+					if (SR_msc_cfg & MSC_CFG_MAC)
 						CPU_MAC_DX_ISA = 1;
-					if (SR_msc_cfg & MSC_CFG_DIV) 
+					if (SR_msc_cfg & MSC_CFG_DIV)
 						CPU_DIV_DX_ISA = 1;
 					break;
 				case EHFF_ARCH_VER_V2:
 				case EHFF_ARCH_VER_V3:
 				case EHFF_ARCH_VER_V3M:
-					if (!(SR_msc_cfg & MSC_CFG_NOD)) 
+					if (!(SR_msc_cfg & MSC_CFG_NOD))
 					{
 						CPU_MAC_DX_ISA = 1;
 						CPU_DIV_DX_ISA = 1;
@@ -603,14 +644,26 @@ extern "C"
 		//Parse Configuration field (bit 27~8)
 
 		//bit 27 Reserved
-		//bit 26 PIC
-		//bit 25 Reserved
+		//bit 26 ZOL
+		CPU_support = 0;
+		if ((SR_msc_cfg & MSC_CFG_MSC_EXT) && (SR_msc_cfg2 & MSC_CFG2_ZOL))
+			CPU_support = 1;
+		if (ELF_elf_ver == EHFF_ELF_VER_1_4_0)
+			n_error += NEC_check_bool(buf, len, EFT_ERROR, "ZOL", CPU_support, eflag & EHFF_HAS_ZOL);
+
+		//bit 25 DSP
+		CPU_support = 0;
+		if ((SR_msc_cfg & MSC_CFG_MSC_EXT) && (SR_msc_cfg2 & MSC_CFG2_DSPPF))
+			CPU_support = 1;
+		if (ELF_elf_ver == EHFF_ELF_VER_1_4_0)
+			n_error += NEC_check_bool(buf, len, EFT_ERROR, "DSP ISA", CPU_support, eflag & EHFF_ISA_DSP);
+
 		//bit 24
 		CPU_support = 0;
 		if(fpu_mount)
 			if(fpcfg & 0x00000010)
 				CPU_support = 1;
-		n_error += NEC_check_bool(buf, EFT_ERROR, "FPU MAC ISA", CPU_support, eflag & EHFF_ISA_FPU_MAC);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "FPU MAC ISA", CPU_support, eflag & EHFF_ISA_FPU_MAC);
 
 		//bit 23~22
 		if(fpu_mount)
@@ -629,10 +682,10 @@ extern "C"
 		}
 		else
 			error_type = EFT_NONE;
-		NEC_print(buf, error_type, "FPU REGISTER", NEC_MSG_FPU_reg[FPU_reg_cpu], NEC_MSG_FPU_reg[FPU_reg_elf],
+		NEC_print(buf, len, error_type, "FPU REGISTER", NEC_MSG_FPU_reg[FPU_reg_cpu], NEC_MSG_FPU_reg[FPU_reg_elf],
 				"FPU REGISTERS not supported by CPU");
 		//bit 21
-		n_error += NEC_check_bool(buf, EFT_ERROR, "L2C ISA", SR_msc_cfg & MSC_CFG_L2C, eflag & EHFF_ISA_L2C);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "L2C ISA", SR_msc_cfg & MSC_CFG_L2C, eflag & EHFF_ISA_L2C);
 
 		//bit 20
 		//MAC_DX check
@@ -645,12 +698,12 @@ extern "C"
 		switch(ELF_arch_ver)
 		{
 			case EHFF_ARCH_VER_V1:
-				n_error += NEC_check_bool(buf, EFT_ERROR, "MAC DX ISA", CPU_MAC_DX_ISA, !(eflag & EHFF_ISA_NO_MAC));
+				n_error += NEC_check_bool(buf, len, EFT_ERROR, "MAC/MAC DX ISA", CPU_MAC_DX_ISA, !(eflag & EHFF_ISA_NO_MAC));
 				break;
 			case EHFF_ARCH_VER_V2:
 			case EHFF_ARCH_VER_V3:
 			case EHFF_ARCH_VER_V3M:
-				n_error += NEC_check_bool(buf, EFT_ERROR, "MAC DX ISA", CPU_MAC_DX_ISA, eflag & EHFF_ISA_MAC_DX);
+				n_error += NEC_check_bool(buf, len, EFT_ERROR, "MAC DX ISA", CPU_MAC_DX_ISA, eflag & EHFF_ISA_MAC_DX);
 				break;
 		}
 		//bit 19
@@ -658,7 +711,7 @@ extern "C"
 		if(fpu_mount)
 			if(fpcfg & 0x00000002)
 				CPU_support = 1;
-		n_error += NEC_check_bool(buf, EFT_ERROR, "FPU DP ISA", CPU_support, eflag & EHFF_ISA_FPU_DP);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "FPU DP ISA", CPU_support, eflag & EHFF_ISA_FPU_DP);
 
 
 		//bit 18 Reserved
@@ -673,7 +726,7 @@ extern "C"
 				{
 					case EHFF_ARCH_VER_V3:
 					case EHFF_ARCH_VER_V3M:
-						n_error += NEC_check_bool(buf, EFT_ERROR, "SATURATION ISA", SR_cpu_ver & CPU_VER_SATURATION, eflag & EHFF_ISA_SATURATION);
+						n_error += NEC_check_bool(buf, len, EFT_ERROR, "SATURATION ISA", SR_cpu_ver & CPU_VER_SATURATION, eflag & EHFF_ISA_SATURATION);
 						break;
 				}
 				break;
@@ -688,28 +741,28 @@ extern "C"
 			else
 				CPU_support = 1;
 		}
-		n_error += NEC_check_bool(buf, EFT_ERROR, "32 GPR", CPU_support, (eflag & EHFF_REDUCED_REGS) == 0);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "32 GPR", CPU_support, (eflag & EHFF_REDUCED_REGS) == 0);
 
 		//bit 15
-		n_error += NEC_check_bool(buf, EFT_ERROR, "STRING ISA", SR_cpu_ver & CPU_VER_STRING, eflag & EHFF_ISA_STRING);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "STRING ISA", SR_cpu_ver & CPU_VER_STRING, eflag & EHFF_ISA_STRING);
 
 		//bit 14
 		switch(ELF_elf_ver)
 		{
 			case EHFF_ELF_VER_1_3_0:
 			case EHFF_ELF_VER_1_3_1:
-				n_error += NEC_check_bool(buf, EFT_ERROR, "16-BIT ISA", SR_cpu_ver & CPU_VER_A16, eflag & EHFF_ISA_16BIT);
+				n_error += NEC_check_bool(buf, len, EFT_ERROR, "16-BIT ISA", SR_cpu_ver & CPU_VER_A16, eflag & EHFF_ISA_16BIT);
 				break;
 			case EHFF_ELF_VER_1_4_0:
 				switch(ELF_arch_ver)
 				{
 					case EHFF_ARCH_VER_V1:
 					case EHFF_ARCH_VER_V2:
-						n_error += NEC_check_bool(buf, EFT_ERROR, "16-BIT ISA", SR_cpu_ver & CPU_VER_A16, eflag & EHFF_ISA_16BIT);
+						n_error += NEC_check_bool(buf, len, EFT_ERROR, "16-BIT ISA", SR_cpu_ver & CPU_VER_A16, eflag & EHFF_ISA_16BIT);
 						break;
 					case EHFF_ARCH_VER_V3:
 					case EHFF_ARCH_VER_V3M:
-						n_error += NEC_check_bool(buf, EFT_ERROR, "IFC ISA", SR_msc_cfg & MSC_CFG_IFC, eflag & EHFF_ISA_IFC);
+						n_error += NEC_check_bool(buf, len, EFT_ERROR, "IFC ISA", SR_msc_cfg & MSC_CFG_IFC, eflag & EHFF_ISA_IFC);
 						break;
 				}
 				break;
@@ -719,28 +772,28 @@ extern "C"
 		switch(ELF_arch_ver)
 		{
 			case EHFF_ARCH_VER_V1:
-				n_error += NEC_check_bool(buf, EFT_ERROR, "DIV DX ISA", CPU_DIV_DX_ISA, eflag & EHFF_ISA_DIV);
+				n_error += NEC_check_bool(buf, len, EFT_ERROR, "DIV DX ISA", CPU_DIV_DX_ISA, eflag & EHFF_ISA_DIV);
 				break;
 			case EHFF_ARCH_VER_V2:
 			case EHFF_ARCH_VER_V3:
 			case EHFF_ARCH_VER_V3M:
-				n_error += NEC_check_bool(buf, EFT_ERROR, "DIV DX ISA", CPU_DIV_DX_ISA, eflag & EHFF_ISA_DIV_DX);
+				n_error += NEC_check_bool(buf, len, EFT_ERROR, "DIV DX ISA", CPU_DIV_DX_ISA, eflag & EHFF_ISA_DIV_DX);
 				break;
 		}
 		//bit 12
-		n_error += NEC_check_bool(buf, EFT_ERROR, "AUDIO/DSP ISA", SR_msc_cfg & MSC_CFG_AUDIO, eflag & EHFF_ISA_AUDIO);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "AUDIO/DSP ISA", SR_msc_cfg & MSC_CFG_AUDIO, eflag & EHFF_ISA_AUDIO);
 		//bit 11
 		CPU_support = 0;
 		if(fpu_mount)
 			if(fpcfg & 0x00000001)
 				CPU_support = 1;
-		n_error += NEC_check_bool(buf, EFT_ERROR, "FPU SP ISA", CPU_support, eflag & EHFF_ISA_FPU_SP);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "FPU SP ISA", CPU_support, eflag & EHFF_ISA_FPU_SP);
 
 		//bit 10
-		n_error += NEC_check_bool(buf, EFT_ERROR, "PEX2 ISA", SR_cpu_ver & CPU_VER_EXT2, eflag & EHFF_ISA_EXT2);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "PEX2 ISA", SR_cpu_ver & CPU_VER_EXT2, eflag & EHFF_ISA_EXT2);
 
 		//bit 9
-		n_error += NEC_check_bool(buf, EFT_ERROR, "PEX1 ISA", SR_cpu_ver & CPU_VER_EXT, eflag & EHFF_ISA_EXT);
+		n_error += NEC_check_bool(buf, len, EFT_ERROR, "PEX1 ISA", SR_cpu_ver & CPU_VER_EXT, eflag & EHFF_ISA_EXT);
 
 		//bit 8
 		CPU_support = 0;
@@ -752,18 +805,18 @@ extern "C"
 		{
 			case EHFF_ELF_VER_1_3_0:
 			case EHFF_ELF_VER_1_3_1:
-				n_error += NEC_check_bool(buf, EFT_ERROR, "MFUSR_PC ISA", CPU_support, eflag & EHFF_ISA_MFUSR_PC);
+				n_error += NEC_check_bool(buf, len, EFT_ERROR, "MFUSR_PC ISA", CPU_support, eflag & EHFF_ISA_MFUSR_PC);
 				break;
 			case EHFF_ELF_VER_1_4_0:
 				switch(ELF_arch_ver)
 				{
 					case EHFF_ARCH_VER_V1:
 					case EHFF_ARCH_VER_V2:
-						n_error += NEC_check_bool(buf, EFT_ERROR, "MFUSR_PC ISA", CPU_support, eflag & EHFF_ISA_MFUSR_PC);
+						n_error += NEC_check_bool(buf, len, EFT_ERROR, "MFUSR_PC ISA", CPU_support, eflag & EHFF_ISA_MFUSR_PC);
 						break;
 					case EHFF_ARCH_VER_V3:
 					case EHFF_ARCH_VER_V3M:
-						n_error += NEC_check_bool(buf, EFT_ERROR, "EIT ISA", SR_msc_cfg & MSC_CFG_EX9IT, eflag & EHFF_ISA_EIT);
+						n_error += NEC_check_bool(buf, len, EFT_ERROR, "EIT ISA", SR_msc_cfg & MSC_CFG_EX9IT, eflag & EHFF_ISA_EIT);
 						break;
 				}
 				break;
@@ -771,15 +824,27 @@ extern "C"
 
 		if(n_error)
 		{
-			strcat(buf, "Error: ELF and CPU mismatch\n");
-//			sprintf(temp, "Total Error: %d\n", n_error);
-//			strcat(buf, temp);
+			NEC_strcat_safety(buf, len, (char*)"Error: ELF and CPU mismatch\n");
+			NEC_sprintf(temp, "Total Error: %d\n", n_error);
+			NEC_strcat_safety(buf, len, temp);
 
-			strcat(buf, "Usage error, Consult Andes Toolchains and their compatible Andes cores for the Toolchain-CPU compatibility.\n");
-			strcat(buf, "The Loader Checking can be disabled under Debug Configuration.\n");
+			NEC_strcat_safety(buf, len, (char*)"Usage error, Consult Andes Toolchains and their compatible Andes cores for the Toolchain-CPU compatibility.\n");
+			NEC_strcat_safety(buf, len, (char*)"The Loader Checking can be disabled under Debug Configuration.\n");
 		}
 		else
-			strcat(buf, "NDS32 ELF checking pass\n");
+			NEC_strcat_safety(buf, len, (char*)"NDS32 ELF checking pass\n");
+
+		if(n_warning)
+		{
+			NEC_sprintf(temp, "Total Warning: %d\n", n_warning);
+			NEC_strcat_safety(buf, len, temp);
+		}
+
+
+		// checking buf overflow
+		if(strlen(buf) >= len)
+			*buf_status = 1;
+
 		return n_error;
 	} //end of elf_check
 
@@ -805,6 +870,10 @@ extern "C"
 #undef MSC_CFG_IFC
 #undef MSC_CFG_MCU
 #undef MSC_CFG_EX9IT
+#undef MSC_CFG_MSC_EXT
+
+#undef MSC_CFG2_DSPPF
+#undef MSC_CFG2_ZOL
 
 #undef MMU_CFG_DE
 
