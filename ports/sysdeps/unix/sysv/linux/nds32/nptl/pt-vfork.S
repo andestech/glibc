@@ -43,18 +43,21 @@ ENTRY (__vfork)
 # ifdef __ASSUME_VFORK_SYSCALL
 #  ifdef PIC
 	! set r1 as gp
-	mfusr $r15, $PC
-	sethi	$r1,	hi20(_GLOBAL_OFFSET_TABLE_+4)
-	ori	$r1,	$r1,	lo12(_GLOBAL_OFFSET_TABLE_+8)
-	add	$r1,	$r1,	$r15
+	pushm	$gp,	$lp
+	mfusr	$r15,	$PC
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4)
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8)
+	add	$gp,	$gp,	$r15
 
 	! r15=C_SYMBOL_NAME(__syscall_error)@PLT
-	sethi $r15, hi20(C_SYMBOL_NAME(__syscall_error)@PLT)
+	sethi	$r15,	hi20(C_SYMBOL_NAME(__syscall_error)@PLT)
 	ori	$r15,	$r15, lo12(C_SYMBOL_NAME(__syscall_error)@PLT)
-	add	$r15, $r15, $r1
+	add	$r15,	$r15, $gp
 	
 	! jump to SYSCALL_ERROR
-	jr		$r15
+	jral		$r15
+	popm	$gp,	$lp
+	ret
 #  else  /* PIC */
 	j C_SYMBOL_NAME(__syscall_error)
 #  endif /* PIC */

@@ -133,8 +133,7 @@
    bgez $r0, 1f; \
    sltsi $r1, $r0, -4096;    \
    bgtz  $r1, 1f;     \
-   mfusr $r15, $PC;  \
-   PIC_jmp($r1, SYSCALL_ERROR)\
+   PIC_jmp_err	\
 	 nop; \
    1:
 # else
@@ -144,8 +143,7 @@
    bgez $r0, 1f; \
    sltsi $r1, $r0, -4096;    \
    bgtz  $r1, 1f;     \
-   mfusr $r15, $PC;  \
-   PIC_jmp($r1, SYSCALL_ERROR)\
+   PIC_jmp_err	\
 	 nop; \
    1:
 # endif
@@ -162,6 +160,19 @@
 #ifdef PIC
 #define jmp(reg, symble) PIC_jmpr(reg, symble)
 /* reg: available register */
+#define PIC_jmp_err \
+   pushm $gp,  $lp;  \
+   mfusr $r15, $PC;  \
+   sethi $gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);  \
+   ori   $gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);  \
+   add   $gp,  $r15, $gp;  \
+   sethi $r15, hi20(SYSCALL_ERROR@PLT);  \
+   ori   $r15, $r15, lo12(SYSCALL_ERROR@PLT);  \
+   add   $r15, $r15, $gp;  \
+   jral  $r15; \
+   popm  $gp,  $lp; \
+   ret;
+
 #define PIC_jmp(reg, symble) \
    mfusr $r15, $PC;  \
    sethi reg,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);  \
@@ -170,7 +181,8 @@
    sethi $r15, hi20(symble@PLT);  \
    ori   $r15, $r15, lo12(symble@PLT);  \
    add   $r15, $r15, reg;  \
-   jr    $r15; 
+   jr    $r15;
+
 
 #define PIC_jmpr(reg, symble) \
    mfusr $r15, $PC;  \

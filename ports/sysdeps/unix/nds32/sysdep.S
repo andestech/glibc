@@ -45,6 +45,10 @@ syscall_error:
 
 #ifdef PIC
 	/* set GP register */
+	/* DOTO: If syscall_error is called by libc's function, $gp has set before
+	   entering syscall_error() function. Therefore, the following procedure
+	   for setting $gp is duplicated. Find a better method to skip following
+	   procedure if the caller function is blonged to libc. */
 	pushm	$gp, $lp
 #ifdef __NDS32_N1213_43U1H__
 	jal	2f

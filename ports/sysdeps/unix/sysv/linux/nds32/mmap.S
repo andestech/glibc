@@ -61,18 +61,21 @@ ENTRY (__mmap)
 2:
 #ifdef PIC
 	! set r1 as gp
-	mfusr $r15, $PC
-	sethi	$r1,	hi20(_GLOBAL_OFFSET_TABLE_+4)
-	ori	$r1,	$r1,	lo12(_GLOBAL_OFFSET_TABLE_+8)
-	add	$r1,	$r1,	$r15
+	pushm	$gp,	$lp
+	mfusr 	$r15, 	$PC
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4)
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8)
+	add	$gp,	$gp,	$r15
 	
 	! r15=SYSCALL_ERROR@PLT
-	sethi $r15, hi20(SYSCALL_ERROR@PLT)
+	sethi	$r15, 	hi20(SYSCALL_ERROR@PLT)
 	ori	$r15,	$r15, lo12(SYSCALL_ERROR@PLT)
-	add	$r15, $r15, $r1
+	add	$r15,	$r15, $gp
 	
 	! jump to SYSCALL_ERROR
-	jr		$r15
+	jral		$r15
+	popm	$gp,	$lp
+	ret
 #else
 	j SYSCALL_ERROR
 #endif

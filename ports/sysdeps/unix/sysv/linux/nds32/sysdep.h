@@ -61,16 +61,19 @@
   2:
 #else
 #define PSEUDO(name, syscall_name, args)	\
-  .pic;										\
+  .pic;						\
   .align 2;					\
-  99:	mfusr $r15, $PC;	\
-	sethi	$r1,	hi20(_GLOBAL_OFFSET_TABLE_ + 4);	\
-	ori	$r1,	$r1,	lo12(_GLOBAL_OFFSET_TABLE_ + 8);	\
-	add	$r1,	$r15,	$r1;	\
-	sethi $r15, hi20(SYSCALL_ERROR@PLT);	\
-	ori	$r15,	$r15, lo12(SYSCALL_ERROR@PLT);	\
-	add	$r15, $r15, $r1;	\
-	jr		$r15;	\
+  99:	pushm	$gp,	$lp;			\
+	mfusr	$r15,	$PC;			\
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_ + 4);	\
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_ + 8);\
+	add	$gp,	$r15,	$gp;		\
+	sethi	$r15,	hi20(SYSCALL_ERROR@PLT);		\
+	ori	$r15,	$r15,	lo12(SYSCALL_ERROR@PLT);	\
+	add	$r15,	$r15,	$gp;		\
+	jral		$r15;			\
+	popm	$gp,	$lp;			\
+	ret;					\
 	nop;                                   	\
 	ENTRY(name);                          	\
 	__do_syscall(syscall_name);            	\
@@ -120,8 +123,8 @@
 
 #if NOT_IN_libc
 #define SYSCALL_ERROR __local_syscall_error
-#ifdef PIC
-#ifdef __NDS32_N1213_43U1H__
+# ifdef PIC
+#  ifdef __NDS32_N1213_43U1H__
 #define SYSCALL_ERROR_HANDLER				\
 __local_syscall_error:	pushm	$gp, $lp;				\
 	jal	1f;	\
@@ -139,7 +142,7 @@ __local_syscall_error:	pushm	$gp, $lp;				\
 	popm	$gp, $lp;				\
 1: \
    ret;
-#else
+#  else
 #define SYSCALL_ERROR_HANDLER				\
 __local_syscall_error:	pushm	$gp, $lp;				\
 	mfusr $r15, $PC;	\
@@ -157,8 +160,8 @@ __local_syscall_error:	pushm	$gp, $lp;				\
 	popm	$gp, $lp;				\
 1: \
    ret;
-#endif
-#else
+#  endif
+# else
 #define SYSCALL_ERROR_HANDLER	\
 __local_syscall_error:	push	$lp;				\
 	neg	$r0, $r0;	\
@@ -171,7 +174,7 @@ __local_syscall_error:	push	$lp;				\
 	li		$r0, -1;				\
 	pop	$lp;				\
 	ret;
-#endif
+# endif
 
 #undef PUSH_STACK
 #undef POP_STACK
