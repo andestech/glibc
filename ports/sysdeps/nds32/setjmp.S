@@ -60,21 +60,22 @@ ENTRY(__sigsetjmp)
 	/* Fall-through if $fpcfg.freg = 0b11.  */
 .LCFG3:
 	fsdi.bi	$fd31, [$r2], #8
+	fsdi.bi	$fd30, [$r2], #8
 	fsdi.bi	$fd29, [$r2], #8
+	fsdi.bi	$fd28, [$r2], #8
 	fsdi.bi	$fd27, [$r2], #8
+	fsdi.bi	$fd26, [$r2], #8
 	fsdi.bi	$fd25, [$r2], #8
-	fsdi.bi	$fd23, [$r2], #8
-	fsdi.bi	$fd21, [$r2], #8
-	fsdi.bi	$fd19, [$r2], #8
-	fsdi.bi	$fd17, [$r2], #8
+	fsdi.bi	$fd24, [$r2], #8
 .LCFG2:
-	fsdi.bi	$fd15, [$r2], #8
-	fsdi.bi	$fd13, [$r2], #8
-	fsdi.bi	$fd11, [$r2], #8
+	fsdi.bi	$fd10, [$r2], #8
 	fsdi.bi	$fd9, [$r2], #8
+	fsdi.bi	$fd8, [$r2], #8
 .LCFG1:
 	fsdi.bi	$fd7, [$r2], #8
+	fsdi.bi	$fd6, [$r2], #8
 	fsdi.bi	$fd5, [$r2], #8
+	fsdi.bi	$fd4, [$r2], #8
 .LCFG0:
 	fsdi.bi	$fd3, [$r2], #8
 #endif /* NDS32_ABI_2FP_PLUS */

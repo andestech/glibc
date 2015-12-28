@@ -43,7 +43,7 @@ ENTRY(__getcontext)
 	/* sigprocmask (SIG_BLOCK, NULL, &sc->sc_mask).  */
 	move    $r0, SIG_BLOCK
 	move	$r1, 0
-	lwi	$r2, [$r4 + UCONTEXT_SIGMASK]
+	addi	$r2, $r4, UCONTEXT_SIGMASK
 	move	$r3, _NSIG8
 	syscall SYS_ify(rt_sigprocmask)
         bnez    $r0, 1f
@@ -65,24 +65,61 @@ ENTRY(__getcontext)
 	beqz	$r20, .LCFG1		/* Branch if $fpcfg.freg = 0b01.  */
 	/* Fall-through if $fpcfg.freg = 0b11.  */
 .LCFG3:
-	fsdi.bi	$fd31, [$r2], #8
-	fsdi.bi	$fd29, [$r2], #8
-	fsdi.bi	$fd27, [$r2], #8
-	fsdi.bi	$fd25, [$r2], #8
-	fsdi.bi	$fd23, [$r2], #8
-	fsdi.bi	$fd21, [$r2], #8
-	fsdi.bi	$fd19, [$r2], #8
-	fsdi.bi	$fd17, [$r2], #8
+	fsdi $fd31, [$r2 + 248]
+	fsdi $fd30, [$r2 + 240]
+	fsdi $fd29, [$r2 + 232]
+	fsdi $fd28, [$r2 + 224]
+	fsdi $fd27, [$r2 + 216]
+	fsdi $fd26, [$r2 + 208]
+	fsdi $fd25, [$r2 + 200]
+	fsdi $fd24, [$r2 + 192]
+	fsdi $fd23, [$r2 + 184]
+	fsdi $fd22, [$r2 + 176]
+	fsdi $fd21, [$r2 + 168]
+	fsdi $fd20, [$r2 + 160]
+	fsdi $fd19, [$r2 + 152]
+	fsdi $fd18, [$r2 + 144]
+	fsdi $fd17, [$r2 + 136]
+	fsdi $fd16, [$r2 + 128]
+
 .LCFG2:
-	fsdi.bi	$fd15, [$r2], #8
-	fsdi.bi	$fd13, [$r2], #8
-	fsdi.bi	$fd11, [$r2], #8
-	fsdi.bi	$fd9, [$r2], #8
+	fssi $fs31, [$r2 + 124]
+	fssi $fs30, [$r2 + 120]
+	fssi $fs29, [$r2 + 116]
+	fssi $fs28, [$r2 + 112]
+	fssi $fs27, [$r2 + 108]
+	fssi $fs26, [$r2 + 104]
+	fssi $fs25, [$r2 + 100]
+	fssi $fs24, [$r2 + 96]
+	fssi $fs23, [$r2 + 92]
+	fssi $fs22, [$r2 + 88]
+	fssi $fs21, [$r2 + 84]
+	fssi $fs20, [$r2 + 80]
+	fssi $fs19, [$r2 + 76]
+	fssi $fs18, [$r2 + 72]
+	fssi $fs17, [$r2 + 68]
+	fssi $fs16, [$r2 + 64]
 .LCFG1:
-	fsdi.bi	$fd7, [$r2], #8
-	fsdi.bi	$fd5, [$r2], #8
+	fssi $fs15, [$r2 + 60]
+	fssi $fs14, [$r2 + 56]
+	fssi $fs13, [$r2 + 52]
+	fssi $fs12, [$r2 + 48]
+	fssi $fs11, [$r2 + 44]
+	fssi $fs10, [$r2 + 40]
+	fssi $fs9, [$r2 + 36]
+	fssi $fs8, [$r2 + 32]
 .LCFG0:
-	fsdi.bi	$fd3, [$r2], #8
+	fssi $fs7, [$r2 + 28]
+	fssi $fs6, [$r2 + 24]
+	fssi $fs5, [$r2 + 20]
+	fssi $fs4, [$r2 + 16]
+	fssi $fs3, [$r2 + 12]
+	fssi $fs2, [$r2 + 8]
+	fssi $fs1, [$r2 + 4]
+	fssi $fs0, [$r2 + 0]
+	/*save fpcsr*/
+	fmfcsr $r1
+	swi $r1, [$r2 + 0x100]
 #endif /* NDS32_ABI_2FP_PLUS */
 
 	/* Set __getcontext return value to 0.  */
