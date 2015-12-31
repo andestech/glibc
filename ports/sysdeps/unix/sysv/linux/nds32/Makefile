@@ -17,6 +17,10 @@
 #     WIP means working-in-progress.
 # 
 #  ============================================================================
+ifeq ($(subdir),misc)
+sysdep_routines += prctl
+endif
+
 
 ifeq ($(subdir),signal)
 sysdep_routines += sigrestorer
