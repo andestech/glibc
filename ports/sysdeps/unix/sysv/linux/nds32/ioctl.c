@@ -4,6 +4,9 @@
 
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
+int ioctl (int __fd, unsigned long int __request, ...);
+libc_hidden_proto(ioctl)
+
 int __ioctl (int __fd, unsigned long int __request, ...)
 {
 	unsigned long arg1;

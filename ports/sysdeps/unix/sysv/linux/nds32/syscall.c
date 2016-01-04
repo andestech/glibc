@@ -15,6 +15,7 @@ long int syscall (long int __sysno, ...)
 	arg5 = va_arg (arg, unsigned long);
 	arg6 = va_arg (arg, unsigned long);
 	va_end (arg);
+        __asm__ volatile ( "" ::: "memory" );
 	__asm__ volatile(
 	"push\t	%0\n\t"
 	:

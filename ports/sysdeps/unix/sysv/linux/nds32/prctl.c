@@ -3,6 +3,9 @@
 #include <sysdep.h>
 #include <sys/prctl.h>
 #include <sys/syscall.h>
+int prctl (int __option, ...);
+libc_hidden_proto(prctl)
+
 int __prctl (int __option, ...)
 {
 	unsigned long arg1,arg2,arg3,arg4;

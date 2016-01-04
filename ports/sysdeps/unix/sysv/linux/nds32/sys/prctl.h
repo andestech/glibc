@@ -25,7 +25,6 @@ __BEGIN_DECLS
 
 /* Control process execution.  */
 extern int prctl (int __option, ...) __THROW;
-libc_hidden_proto(prctl)
 __END_DECLS
 
 #endif  /* sys/prctl.h */
