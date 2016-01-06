@@ -343,7 +343,7 @@ static inline int __attribute__ ((unused))
 elf_machine_matches_host(const Elf32_Ehdr *ehdr)
 {
   int fd;
-  char buf[8000];
+  char buf[2];
   int len;
 
   /* check ABI first */
@@ -377,14 +377,22 @@ elf_machine_matches_host(const Elf32_Ehdr *ehdr)
 
   // no need to check endian since it was checked in  open_verify()
   unsigned int status;
-  unsigned int err = elf_check (ehdr, reg_read, buf, 8000, &status);
+  char* elf_check_info=malloc(2048);
+  if(elf_check_info == NULL)
+  {
+    _dl_error_printf ("ld.so: no memory for elf_check_info buffer\n");
+    return 0;
+  }
+  unsigned int err = elf_check (ehdr, reg_read, elf_check_info, 2048, &status);
 
   if (err)
     {
-      _dl_error_printf (buf);
+  //    nds32_elf_get_errstr (buf, 8000, err);
+      _dl_error_printf (elf_check_info);
+      free(elf_check_info);
       return 0;
     }
-
+  free(elf_check_info);
   return 1;
 }
 
