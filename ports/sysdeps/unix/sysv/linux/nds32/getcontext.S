@@ -50,7 +50,7 @@ ENTRY(__getcontext)
 
 
 #ifdef NDS32_ABI_2FP_PLUS
-	lwi	$r2, [$r4 + UCONTEXT_FSREGS]
+	addi	$r2, $r4, UCONTEXT_FSREGS
 /* Process for FPU registers.  */
 	fmfcfg	$r20	/* Keep $fpcfg in $r20.  */
 	slli	$r20, $r20, #28
