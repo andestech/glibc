@@ -35,7 +35,10 @@
    _syscall2(int, clone, int, flags, void *, child_stack)  */
 
 ENTRY(__clone)
-
+#ifdef __NDS32_ABI_2FP_PLUS__
+	lwi	$r4, [$sp]
+	lwi	$r5, [$sp+4]
+#endif
 #ifdef PIC
 	/* set GP register to parent only, cause child's $SP will be $r1. */
 	pushm	$fp, $gp
@@ -84,12 +87,19 @@ ENTRY(__clone)
 						! The pt_regs is placed in $r5 in kerenl (sys_clone_wrapper)
 	move    $r2, $r4
 
-#ifdef PIC
+#ifdef __NDS32_ABI_2FP_PLUS__
+# ifdef PIC
+       lwi     $r4, [$sp+#0x10]
+# else
        lwi     $r4, [$sp+#0x8]
+# endif
 #else
+# ifdef PIC
+       lwi     $r4, [$sp+#0x8]
+# else
        lwi     $r4, [$sp]
+# endif
 #endif
-
 
 	__do_syscall(clone)
 	beqz    $r0, 4f
