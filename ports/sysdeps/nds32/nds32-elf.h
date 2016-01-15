@@ -278,7 +278,7 @@ extern "C"
 		memset(buf, ' ', (width-len));
 	}
 
-	static inline void NEC_sprintf(char *buf, const char *str, ...)
+	static void NEC_sprintf(char *buf, const char *str, ...)
 	{
 		int width, len = 0;
 		va_list ap;
@@ -323,6 +323,7 @@ extern "C"
 				strcat(buf, temp);
 				len = strlen(buf);
 			}
+
 			str++;
 		}
 		buf[len] = '\0';
@@ -471,7 +472,6 @@ extern "C"
 		int CPU_support;
 		unsigned char FPU_reg_elf, FPU_reg_cpu;
 		ELF_Fail_Type error_type;
-		unsigned int is_N1213HC;
 
 
 
@@ -502,19 +502,6 @@ extern "C"
 			big_endian_cpu = 1;
 		else
 			big_endian_cpu = 0;
-
-
-		if(((SR_cpu_ver & 0xffff0000) == 0x0c010000 ) || ((SR_cpu_ver & 0xffff0000) == 0x0c020000))
-			is_N1213HC = 1;
-		else
-			is_N1213HC = 0;
-		//  N1213HC has the following features :
-		//      no mfusr_pc
-		//      d0/d1 register
-		//      use V0 toolchain
-		//      mac_dx
-		//      no div_dx
-		//      pex1
 
 
 		/* 20091106 note :
@@ -601,33 +588,23 @@ extern "C"
 
 		CPU_MAC_DX_ISA = 0;
 		CPU_DIV_DX_ISA = 0;
-		if (is_N1213HC)
+		switch(CPU_arch_ver)
 		{
-			if (SR_msc_cfg & MSC_CFG_MAC)
-				CPU_MAC_DX_ISA = 1;
-			if (SR_msc_cfg & MSC_CFG_DIV)
-				CPU_DIV_DX_ISA = 1;
-		}
-		else
-		{
-			switch(CPU_arch_ver)
-			{
-				case EHFF_ARCH_VER_V1:
-					if (SR_msc_cfg & MSC_CFG_MAC)
-						CPU_MAC_DX_ISA = 1;
-					if (SR_msc_cfg & MSC_CFG_DIV)
-						CPU_DIV_DX_ISA = 1;
-					break;
-				case EHFF_ARCH_VER_V2:
-				case EHFF_ARCH_VER_V3:
-				case EHFF_ARCH_VER_V3M:
-					if (!(SR_msc_cfg & MSC_CFG_NOD))
-					{
-						CPU_MAC_DX_ISA = 1;
-						CPU_DIV_DX_ISA = 1;
-					}
-					break;
-			}
+			case EHFF_ARCH_VER_V1:
+				if (SR_msc_cfg & MSC_CFG_MAC)
+					CPU_MAC_DX_ISA = 1;
+				if (SR_msc_cfg & MSC_CFG_DIV)
+					CPU_DIV_DX_ISA = 1;
+				break;
+			case EHFF_ARCH_VER_V2:
+			case EHFF_ARCH_VER_V3:
+			case EHFF_ARCH_VER_V3M:
+				if (!(SR_msc_cfg & MSC_CFG_NOD))
+				{
+					CPU_MAC_DX_ISA = 1;
+					CPU_DIV_DX_ISA = 1;
+				}
+				break;
 		}
 		fpu_mount = 0;
 		if (SR_cpu_ver & CPU_VER_FPU)
@@ -691,10 +668,9 @@ extern "C"
 		//bit 20
 		//MAC_DX check
 		// Target Machine certainly has MAC_DX under the following conditions:
-		// 1. Baseline V1 ISA && N1213-U143H (hardcore version)
-		// 2. Baseline V1 ISA && MSC_CFG.MAC (softcore version)
-		// 3. Baseline V2 ISA && D0/D1 support
-		// 4. Baseline V3 ISA && D0/D1 support
+		// 1. Baseline V1 ISA && MSC_CFG.MAC (softcore version)
+		// 2. Baseline V2 ISA && D0/D1 support
+		// 3. Baseline V3 ISA && D0/D1 support
 
 		switch(ELF_arch_ver)
 		{
@@ -733,15 +709,10 @@ extern "C"
 				break;
 		}
 		//bit 16
-		if(is_N1213HC)
-			CPU_support = 1;
+		if(SR_msc_cfg & MSC_CFG_REDUCED_REG)
+			CPU_support = 0;
 		else
-		{
-			if(SR_msc_cfg & MSC_CFG_REDUCED_REG)
-				CPU_support = 0;
-			else
-				CPU_support = 1;
-		}
+			CPU_support = 1;
 		n_error += NEC_check_bool(buf, len, EFT_ERROR, "32 GPR", CPU_support, (eflag & EHFF_REDUCED_REGS) == 0);
 
 		//bit 15
@@ -798,9 +769,7 @@ extern "C"
 
 		//bit 8
 		CPU_support = 0;
-		if(is_N1213HC)
-			CPU_support = 1;
-		else if(CPU_arch_ver == EHFF_ARCH_VER_V3M)
+		if(CPU_arch_ver == EHFF_ARCH_VER_V3M)
 			CPU_support = 1;
 		switch(ELF_elf_ver)
 		{
