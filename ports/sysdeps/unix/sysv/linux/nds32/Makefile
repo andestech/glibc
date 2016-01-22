@@ -18,7 +18,7 @@
 # 
 #  ============================================================================
 ifeq ($(subdir),misc)
-sysdep_routines += prctl
+sysdep_routines += prctl mremap
 endif
 
 
