@@ -20,4 +20,8 @@
 /* We can't use the normal "#include <nptl/pthread_spin_lock.c>" because
    it will resolve to this very file.  Using "sysdeps/.." as reference to the
    top level directory does the job.  */
+#ifdef NDS32_HOST_CYGWIN
+#include <../../nptl/pthread_spin_lock.c>
+#else
 #include <sysdeps/../nptl/pthread_spin_lock.c>
+#endif
