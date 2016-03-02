@@ -41,6 +41,7 @@ __makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
 {
   extern void __startcontext (void);
   unsigned long int *sp;
+  unsigned long *regptr;
   va_list ap;
   int i;
 
@@ -53,15 +54,16 @@ __makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
   /* Keep the stack aligned.  */
   sp = (unsigned long int *) (((uintptr_t) sp) & -8L);
 
-  ucp->uc_mcontext.gregs[REG_R6] = (uintptr_t) ucp->uc_link;
-  ucp->uc_mcontext.gregs[REG_SP] = (uintptr_t) sp;
+  ucp->uc_mcontext.nds32_r6 = (uintptr_t) ucp->uc_link;
+  ucp->uc_mcontext.nds32_sp = (uintptr_t) sp;
   ucp->uc_mcontext.nds32_ipc = (uintptr_t) func;
-  ucp->uc_mcontext.gregs[REG_LP] = (uintptr_t) &__startcontext;
+  ucp->uc_mcontext.nds32_lr = (uintptr_t) &__startcontext;
 
   va_start (ap, argc);
+  regptr = &ucp->uc_mcontext.nds32_r0;
   for (i = 0; i < argc; ++i)
     if (i < 6)
-      ucp->uc_mcontext.gregs[i] = va_arg (ap, unsigned long int);
+      *regptr++ = va_arg (ap, unsigned long int);
     else
       sp[i - 6] = va_arg (ap, unsigned long int);
 

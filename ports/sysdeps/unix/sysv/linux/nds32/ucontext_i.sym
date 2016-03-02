@@ -10,10 +10,10 @@ _NSIG8          (_NSIG / 8)
 
 #define ucontext(member)	offsetof (ucontext_t, member)
 #define mcontext(member)	ucontext (uc_mcontext.member)
-#define mreg(reg)		mcontext (gregs[REG_##reg])
+#define mreg(reg)		mcontext (nds32_##reg)
 
 
-UCONTEXT_GREGS                  mcontext (gregs)
+UCONTEXT_GREGS                  mcontext (nds32_r0)
 #ifdef NDS32_ABI_2FP_PLUS
 UCONTEXT_FSREGS                 mcontext (fpu.fs_regs)
 UCONTEXT_FDREGS                 mcontext (fpu.fd_regs)
