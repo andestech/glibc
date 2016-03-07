@@ -1,5 +1,6 @@
-/* Copyright (C) 1991-2013 Free Software Foundation, Inc.
+/* Copyright (C) 2002-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
+   Contributed by Ulrich Drepper <drepper@redhat.com>, 2002.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -15,15 +16,4 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#include <signal.h>
-#include <unistd.h>
-
-/* Raise the signal SIG.  */
-int
-raise (sig)
-     int sig;
-{
-  return __kill (__getpid (), sig);
-}
-libc_hidden_def (raise)
-weak_alias (raise, gsignal)
+#include <nptl/sysdeps/unix/sysv/linux/raise.c>
