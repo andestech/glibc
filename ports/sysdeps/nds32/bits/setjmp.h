@@ -35,7 +35,7 @@ typedef struct
     int __fpcfg;
 
     /* Callee-saved fp registers pointer.  */
-    int __fpregs[30];
+    int __fpregs[32];
 
   } __jmp_buf[1] __attribute__((__aligned__ (8)));
 #endif
