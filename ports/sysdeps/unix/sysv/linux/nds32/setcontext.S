@@ -8,8 +8,7 @@ ENTRY(__setcontext)
         move    $r4, $r0
 
 #ifdef NDS32_ABI_2FP_PLUS
-	addi	$r0,  $r4, UCONTEXT_FSREGS
-	lwi.bi	$r20, [$r0], #4	/* Load $fpcfg.freg to $r20.  */
+	addi	$r0,  $r4, UCONTEXT_FDREGS
 
 	/* Case switch for $r20 as $fpcfg.freg.  */
 	beqz    $r20, .LCFG0         /* Branch if $fpcfg.freg = 0b00.  */
@@ -28,24 +27,16 @@ ENTRY(__setcontext)
 	fldi $fd25, [$r0 + 200]
 	fldi $fd24, [$r0 + 192]
 .LCFG2:
-	flsi $fs21, [$r0 + 84]
-	flsi $fs20, [$r0 + 80]
-	flsi $fs19, [$r0 + 76]
-	flsi $fs18, [$r0 + 72]
-	flsi $fs17, [$r0 + 68]
-	flsi $fs16, [$r0 + 64]
+	fldi $fd10, [$r0 + 80]
+	fldi $fd9, [$r0 + 72]
+	fldi $fd8, [$r0 + 64]
 .LCFG1:
-	flsi $fs15, [$r0 + 60]
-	flsi $fs14, [$r0 + 56]
-	flsi $fs13, [$r0 + 52]
-	flsi $fs12, [$r0 + 48]
-	flsi $fs11, [$r0 + 44]
-	flsi $fs10, [$r0 + 40]
-	flsi $fs9, [$r0 + 36]
-	flsi $fs8, [$r0 + 32]
+	fldi $fd7, [$r0 + 56]
+	fldi $fd6, [$r0 + 48]
+	fldi $fd5, [$r0 + 40]
+	fldi $fd4, [$r0 + 32]
 .LCFG0:
-	flsi $fs7, [$r0 + 28]
-	flsi $fs6, [$r0 + 24]
+	fldi $fd3, [$r0 + 24]
 	/*save fpcsr*/
 	lwi $r1, [$r0 + 0x100]
 	fmtcsr $r1

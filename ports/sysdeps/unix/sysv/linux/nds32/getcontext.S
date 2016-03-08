@@ -50,12 +50,11 @@ ENTRY(__getcontext)
 
 
 #ifdef NDS32_ABI_2FP_PLUS
-	addi	$r2, $r4, UCONTEXT_FSREGS
+	addi	$r2, $r4, UCONTEXT_FDREGS
 /* Process for FPU registers.  */
 	fmfcfg	$r20	/* Keep $fpcfg in $r20.  */
 	slli	$r20, $r20, #28
 	srli	$r20, $r20, #30	/* Set $r20 as $fpcfg.freg.  */
-	swi.bi	$r20, [$r2], #4
 
 	/* Case switch for $r20 as $fpcfg.freg.  */
 	beqz	$r20, .LCFG0		/* Branch if $fpcfg.freg = 0b00.  */
@@ -74,24 +73,16 @@ ENTRY(__getcontext)
 	fsdi $fd25, [$r2 + 200]
 	fsdi $fd24, [$r2 + 192]
 .LCFG2:
-	fssi $fs21, [$r2 + 84]
-	fssi $fs20, [$r2 + 80]
-	fssi $fs19, [$r2 + 76]
-	fssi $fs18, [$r2 + 72]
-	fssi $fs17, [$r2 + 68]
-	fssi $fs16, [$r2 + 64]
+	fsdi $fd10, [$r2 + 80]
+	fsdi $fd9, [$r2 + 72]
+	fsdi $fd8, [$r2 + 64]
 .LCFG1:
-	fssi $fs15, [$r2 + 60]
-	fssi $fs14, [$r2 + 56]
-	fssi $fs13, [$r2 + 52]
-	fssi $fs12, [$r2 + 48]
-	fssi $fs11, [$r2 + 44]
-	fssi $fs10, [$r2 + 40]
-	fssi $fs9, [$r2 + 36]
-	fssi $fs8, [$r2 + 32]
+	fsdi $fd7, [$r2 + 56]
+	fsdi $fd6, [$r2 + 48]
+	fsdi $fd5, [$r2 + 40]
+	fsdi $fd4, [$r2 + 32]
 .LCFG0:
-	fssi $fs7, [$r2 + 28]
-	fssi $fs6, [$r2 + 24]
+	fsdi $fd3, [$r2 + 24]
 	/*save fpcsr*/
 	fmfcsr $r1
 	swi $r1, [$r2 + 0x100]

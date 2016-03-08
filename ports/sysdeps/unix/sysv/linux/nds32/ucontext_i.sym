@@ -15,7 +15,6 @@ _NSIG8          (_NSIG / 8)
 
 UCONTEXT_GREGS                  mcontext (nds32_r0)
 #ifdef NDS32_ABI_2FP_PLUS
-UCONTEXT_FSREGS                 mcontext (fpu.fs_regs)
 UCONTEXT_FDREGS                 mcontext (fpu.fd_regs)
 #endif
 UCONTEXT_PC                     mcontext (nds32_ipc)
