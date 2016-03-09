@@ -49,7 +49,7 @@ ENTRY(__getcontext)
         bnez    $r0, 1f
 
 
-#ifdef NDS32_ABI_2FP_PLUS
+#ifdef __NDS32_ABI_2FP_PLUS__
 	addi	$r2, $r4, UCONTEXT_FDREGS
 /* Process for FPU registers.  */
 	fmfcfg	$r20	/* Keep $fpcfg in $r20.  */
@@ -86,7 +86,7 @@ ENTRY(__getcontext)
 	/*save fpcsr*/
 	fmfcsr $r1
 	swi $r1, [$r2 + 0x100]
-#endif /* NDS32_ABI_2FP_PLUS */
+#endif /* __NDS32_ABI_2FP_PLUS__ */
 
 	/* Set __getcontext return value to 0.  */
         xor      $r0, $r0, $r0

@@ -113,7 +113,7 @@
 
 #define ret_NOERRNO ret
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
+#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
 # define STACK_PUSH(count) addi $sp, $sp, count
 # define STACK_POP(count) addi $sp, $sp, count
 #else

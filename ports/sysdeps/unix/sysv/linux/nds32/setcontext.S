@@ -7,7 +7,7 @@
 ENTRY(__setcontext)
         move    $r4, $r0
 
-#ifdef NDS32_ABI_2FP_PLUS
+#ifdef __NDS32_ABI_2FP_PLUS__
 	addi	$r0,  $r4, UCONTEXT_FDREGS
 
 	/* Case switch for $r20 as $fpcfg.freg.  */
@@ -40,7 +40,7 @@ ENTRY(__setcontext)
 	/*save fpcsr*/
 	lwi $r1, [$r0 + 0x100]
 	fmtcsr $r1
-#endif /* NDS32_ABI_2FP_PLUS */
+#endif /* __NDS32_ABI_2FP_PLUS__ */
 
 	/* sigprocmask (SIG_BLOCK, &sc->sc_mask, NULL).  */
 	move    $r0, SIG_SETMASK

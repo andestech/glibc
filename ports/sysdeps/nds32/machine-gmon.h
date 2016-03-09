@@ -26,13 +26,13 @@ static void __mcount_internal (u_long frompc, u_long selfpc) __attribute_used__;
 #define _MCOUNT_DECL(frompc, selfpc) \
 static void __mcount_internal (u_long frompc, u_long selfpc)
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
+#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
 #define NDS32_STACK_PUSH_STR
 #define NDS32_STACK_POP_STR
-#else /* !(defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS))  */
+#else /* !(defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__))  */
 #define NDS32_STACK_PUSH_STR "addi $sp, $sp, -24"
 #define NDS32_STACK_POP_STR "addi $sp, $sp, 24"
-#endif /* !(defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS))  */
+#endif /* !(defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__))  */
 
 #define MCOUNT					\
 asm (						\

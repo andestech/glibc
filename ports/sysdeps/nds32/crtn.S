@@ -1,5 +1,5 @@
 
-#if defined(NDS32_ABI_2FP_PLUS)
+#if defined(__NDS32_ABI_2FP_PLUS__)
 
 #include <sysdep.h>
 

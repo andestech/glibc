@@ -56,10 +56,10 @@ syscall_error:
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_ + 4)
 	add	$gp,	$gp,	$lp
 #else
-#ifdef NDS32_ISA_BASELINE_V3
+#ifdef __NDS32_BASELINE_V3__
         sethi   $gp, HI20(_GLOBAL_OFFSET_TABLE_ -  8)
         ori     $gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_ - 4)
-        add.pc  $gp, $pc, $gp
+        add5.pc  $gp
 #else
         sethi   $gp, hi20(_GLOBAL_OFFSET_TABLE_ - 8)
         ori     $gp, $gp, lo12(_GLOBAL_OFFSET_TABLE_ - 4)
@@ -89,7 +89,7 @@ syscall_error:
 	push	$r0
 #endif
 
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
+#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
 #else
 	addi	$sp,	$sp, -24
 #endif
@@ -99,7 +99,7 @@ syscall_error:
 #else
 	bal	C_SYMBOL_NAME(__errno_location)
 #endif	
-#if defined(NDS32_ABI_2) || defined(NDS32_ABI_2FP_PLUS)
+#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
 #else
 	addi	$sp,	$sp, 24
 #endif
