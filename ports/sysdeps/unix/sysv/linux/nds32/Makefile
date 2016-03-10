@@ -18,7 +18,8 @@
 # 
 #  ============================================================================
 ifeq ($(subdir),misc)
-sysdep_routines += prctl mremap
+sysdep_headers += sys/cachectl.h
+sysdep_routines += cacheflush prctl mremap
 endif
 
 

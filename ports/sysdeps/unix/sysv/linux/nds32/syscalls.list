@@ -17,3 +17,4 @@ setsockopt	-	setsockopt	i:iiibn	__setsockopt	setsockopt
 shutdown	-	shutdown	i:ii	__shutdown	shutdown
 socket		-	socket		i:iii	__socket	socket
 socketpair	-	socketpair	i:iiif	__socketpair	socketpair
+cacheflush	-	cacheflush	i:pii	_flush_cache	cacheflush
