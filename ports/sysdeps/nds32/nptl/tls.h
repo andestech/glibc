@@ -122,7 +122,7 @@ register void *__thread_pointer asm ("$r25");
 
 /* Magic for libthread_db to know how to do THREAD_SELF.  */
 # define DB_THREAD_SELF \
-  CONST_THREAD_AREA (32, TLS_TCB_OFFSET + TLS_PRE_TCB_SIZE)
+  REGISTER (32, 32, 152, - TLS_TCB_OFFSET - TLS_PRE_TCB_SIZE)
 
 /* Read member of the thread descriptor directly.  */
 # define THREAD_GETMEM(descr, member) (descr->member)
