@@ -42,6 +42,9 @@ ENTRY(__clone)
 #ifdef PIC
 	/* set GP register to parent only, cause child's $SP will be $r1. */
 	pushm	$fp, $gp
+	.cfi_adjust_cfa_offset 8
+	.cfi_rel_offset fp, 0
+	.cfi_rel_offset gp, 4
 #ifndef __NDS32_N1213_43U1H__
 	mfusr	$r15, $pc
 #endif /* ! __NDS32_N1213_43U1H__  */
@@ -62,11 +65,20 @@ ENTRY(__clone)
 	/* restore GP register, only in parent's stack  */
 	la	$r15, C_SYMBOL_NAME(__syscall_error@PLT)
 	push	$lp
+	.cfi_adjust_cfa_offset 4
+	.cfi_rel_offset lp, 0
 	addi	$sp, $sp, -4
+	.cfi_adjust_cfa_offset 4
 	jral	$r15
 	addi	$sp, $sp, 4
+	.cfi_adjust_cfa_offset -4
 	pop	$lp
+	.cfi_adjust_cfa_offset -4
+	.cfi_restore lp
 	popm	$fp, $gp
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore fp
+	.cfi_restore gp
 	ret
 #else /* ! PIC  */
 	la	$r15, C_SYMBOL_NAME(__syscall_error)
@@ -110,6 +122,9 @@ ENTRY(__clone)
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
 	popm	$fp, $gp
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore gp
+	.cfi_restore fp
 #endif /* PIC  */
 	ret
 
@@ -119,6 +134,7 @@ ENTRY(__clone)
         swi     $r0, [$r25 + TID_OFFSET]
         j       7f
 4:
+	.cfi_undefined lp
         beqz    $r3, 6b
 	movi	$r0, CLONE_THREAD		! Skip when CLONE_THREAD is set.
 	and	$r0, $r5, $r0

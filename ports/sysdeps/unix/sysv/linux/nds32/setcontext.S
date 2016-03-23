@@ -57,9 +57,11 @@ ENTRY(__setcontext)
 	lmw.bim	$r16, [$r15], $r25, #0xf
         lwi     $r15, [$r0 + UCONTEXT_PC]
         push    $r1
+	.cfi_adjust_cfa_offset 4
         move    $r1, $r0
         lwi     $r0, [$r1 + UCONTEXT_GREGS]
         pop     $r1
+	.cfi_adjust_cfa_offset -4
         jr      $r15
 1:
 	move $r0, -1

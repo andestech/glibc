@@ -21,21 +21,35 @@
 # include <nptl/pthreadP.h>
 #endif
 
+
+
 #define PUSHARGS_0
-#define PUSHARGS_1	smw.adm $r0, [$sp], $r0
-#define PUSHARGS_2	smw.adm $r0, [$sp], $r1
-#define PUSHARGS_3	smw.adm $r0, [$sp], $r2
-#define PUSHARGS_4	smw.adm $r0, [$sp], $r3
-#define PUSHARGS_5	smw.adm $r0, [$sp], $r4
-#define PUSHARGS_6	smw.adm $r0, [$sp], $r5
+#define PUSHARGS_1	smw.adm $r0, [$sp], $r0;	\
+			.cfi_adjust_cfa_offset 4;
+#define PUSHARGS_2	smw.adm $r0, [$sp], $r1;	\
+			.cfi_adjust_cfa_offset 8;
+#define PUSHARGS_3	smw.adm $r0, [$sp], $r2;	\
+			.cfi_adjust_cfa_offset 12;
+#define PUSHARGS_4	smw.adm $r0, [$sp], $r3;	\
+			.cfi_adjust_cfa_offset 16;
+#define PUSHARGS_5	smw.adm $r0, [$sp], $r4;	\
+			.cfi_adjust_cfa_offset 20;
+#define PUSHARGS_6	smw.adm $r0, [$sp], $r5;	\
+			.cfi_adjust_cfa_offset 24;
 
 #define POPARGS2_0
-#define POPARGS2_1	lmw.bim $r0, [$sp], $r0
-#define POPARGS2_2	lmw.bim $r0, [$sp], $r1
-#define POPARGS2_3	lmw.bim $r0, [$sp], $r2
-#define POPARGS2_4	lmw.bim $r0, [$sp], $r3
-#define POPARGS2_5	lmw.bim $r0, [$sp], $r4
-#define POPARGS2_6	lmw.bim $r0, [$sp], $r5
+#define POPARGS2_1	lmw.bim $r0, [$sp], $r0;	\
+			.cfi_adjust_cfa_offset -4;
+#define POPARGS2_2	lmw.bim $r0, [$sp], $r1;	\
+			.cfi_adjust_cfa_offset -8;
+#define POPARGS2_3	lmw.bim $r0, [$sp], $r2;	\
+			.cfi_adjust_cfa_offset -12;
+#define POPARGS2_4	lmw.bim $r0, [$sp], $r3;	\
+			.cfi_adjust_cfa_offset -16;
+#define POPARGS2_5	lmw.bim $r0, [$sp], $r4;	\
+			.cfi_adjust_cfa_offset -20;
+#define POPARGS2_6	lmw.bim $r0, [$sp], $r5;	\
+			.cfi_adjust_cfa_offset -24;
 
 #if !defined NOT_IN_libc || defined IS_IN_libpthread || defined IS_IN_librt
 
@@ -54,6 +68,9 @@
   END (__##syscall_name##_nocancel);					\
   ENTRY (name);								\
   smw.adm $r6,[$sp],$r6,0x2;                                            \
+  .cfi_adjust_cfa_offset 8; 						\
+  .cfi_rel_offset r6, 0;						\
+  .cfi_rel_offset lp, 4;						\
   SINGLE_THREAD_P ($r15);                                               \
   bgtz $r15, .Lpseudo_cancel;                                           \
   __do_syscall(syscall_name);                                           \
@@ -65,11 +82,16 @@
         POPARGS2_##args;                                                \
 	__do_syscall(syscall_name);		/* do the call.  */	\
 	push $r0;                                                       \
+	.cfi_adjust_cfa_offset 4;					\
         mov55	$r0, $r6;		/* save syscall return value. */\
 	CDISABLE($r5);							\
         pop $r0;                          /* retrieve return value.  */	\
-50:\
+	.cfi_adjust_cfa_offset -4;					\
+50:									\
   lmw.bim $r6,[$sp],$r6, 0x2;                                           \
+  .cfi_adjust_cfa_offset -8; 						\
+  .cfi_restore lp;							\
+  .cfi_restore r6;							\
   PSEUDO_RET;                                                           
 # ifndef __ASSEMBLER__
 //#  if defined IS_IN_libpthread || !defined NOT_IN_libc

@@ -38,12 +38,15 @@
 # define STACK_POP_AUDIT      "addi $r19, $r19, 24"
 #endif
 
+
 # define TRAMPOLINE_PROLOG_TEMPLATE(tramp_name) \
 asm ("\n\
 	.text\n\
 	.globl "#tramp_name"\n\
 	.type "#tramp_name", #function\n\
 	.align 4\n\
+	.cfi_sections .debug_frame\n\
+	.cfi_startproc\n\
 "#tramp_name":\n\
 	! we get called with\n\
 	! 	lp contains the return address from this call\n\
@@ -53,9 +56,13 @@ asm ("\n\
 \n\
 	! save arguments r0 - r5\n\
 	smw.adm	$r0,	[$sp],	$r5,	0\n\
+	.cfi_adjust_cfa_offset 24	\n\
 \n\
 	! push gp, lp\n\
 	smw.adm	$sp,	[$sp],	$sp,	6\n\
+	.cfi_adjust_cfa_offset 8	\n\
+	.cfi_rel_offset gp, 0		\n\
+	.cfi_rel_offset lp, 4		\n\
 \n\
 ");
 
@@ -98,11 +105,16 @@ asm ("\n\
 	! adjust sp and reload registers\n\
 	"STACK_POP"\n\
 	lmw.bim	$sp,	[$sp],	$sp,	6\n\
+	.cfi_adjust_cfa_offset -8	\n\
+	.cfi_restore gp			\n\
+	.cfi_restore lp			\n\
 	lmw.bim	$r0,	[$sp],	$r5,	0\n\
+	.cfi_adjust_cfa_offset -24	\n\
 \n\
 	! jump to the newly found address\n\
 	jr		$r15\n\
 \n\
+	.cfi_endproc			\n\
 	.size "#tramp_name", .-"#tramp_name"\n\
 \n\
 ");
@@ -129,45 +141,62 @@ asm ("\n\
 	addi	$r2,	$lp,	0\n\
 	addi	$r3,	$sp,	0\n\
 	push	$r3\n\
+	.cfi_adjust_cfa_offset 4	\n\
 	addi	$r3,	$r3,	-4\n\
 	push	$r3\n\
+	.cfi_adjust_cfa_offset 4	\n\
 	smw.adm	$r0,	[$sp],	$r1\n\
+	.cfi_adjust_cfa_offset 8	\n\
 	xor	$r4,	$r4,	$r4\n\
 	push	$r4\n\
+	.cfi_adjust_cfa_offset 4	\n\
 	addi	$r4,	$sp,	0\n\
 	push	$r3\n\
+	.cfi_adjust_cfa_offset 4	\n\
 	push	$r4\n\
+	.cfi_adjust_cfa_offset 4	\n\
 \n\
 	! call fixup routine\n\
 	addi	$sp,	$sp, -16\n\
+	.cfi_adjust_cfa_offset 16	\n\
 	bal	"#fixup_name"\n\
 	addi	$sp,	$sp, 16\n\
+	.cfi_adjust_cfa_offset -16	\n\
 \n\
 	pop	$r4\n\
+	.cfi_adjust_cfa_offset -4	\n\
 	pop	$r3\n\
+	.cfi_adjust_cfa_offset -4	\n\
 	! save the return\n\
 	addi	$r15,	$r0,	0\n\
 	smw.adm	$r18,	[$sp],	$r20\n\
+	.cfi_adjust_cfa_offset 12	\n\
 	move	$r20,	$r3\n\
 	lwi	$r18,	[$r4]\n\
 	bgez	$r18,	1f\n\
 	! adjust sp and reload registers\n\
 	lmw.bim	$r18,	[$sp],	$r20\n\
+	.cfi_adjust_cfa_offset -12	\n\
 	addi	$sp,	$sp,	20\n\
+	.cfi_adjust_cfa_offset -20	\n\
 	"STACK_POP"\n\
 	lmw.bim	$sp,	[$sp],	$sp,	6\n\
+	.cfi_adjust_cfa_offset -8	\n\
+	.cfi_restore gp			\n\
+	.cfi_restore lp			\n\
 	lmw.bim	$r0,	[$sp],	$r5,	0\n\
+	.cfi_adjust_cfa_offset -24	\n\
 \n\
 	! jump to the newly found address\n\
 	jr		$r15\n\
 1:\n\
-	sub	$sp,	$sp,	$r18\n\
 	addi	$r19,	$r4,	20\n\
 \n\
 	! adjust sp and reload registers\n\
 	"STACK_POP_AUDIT"\n\
 	lmw.bim	$sp,	[$r19],	$sp,	6\n\
         lmw.bim	$r0,	[$r19],	$r5,	0\n\
+	sub	$sp,	$sp,	$r18\n\
 \n\
 	! jump to the newly found address\n\
 	smw.adm	$r18,	[$sp],	$r20\n\
@@ -175,6 +204,7 @@ asm ("\n\
 	lmw.bim	$r18,	[$sp],	$r20\n\
 	add	$sp,	$sp,	$r18\n\
 	smw.adm	$r0,	[$sp],	$r1\n\
+	.cfi_adjust_cfa_offset 8	\n\
 	addi	$r19,	$r20,	-12\n\
 	lmw.bim	$r0,	[$r19],	$r1\n\
 	move	$r3,	$sp\n\
@@ -186,14 +216,23 @@ asm ("\n\
 	add	$gp,	$ta,	$gp;\n\
 	bal	"_DL_CALL_PLTEXIT"\n\
 	lmw.bim	$r0,	[$sp],	$r1\n\
+	.cfi_adjust_cfa_offset -8	\n\
 	lmw.bim	$r18,	[$sp],	$r20\n\
+	.cfi_adjust_cfa_offset -12	\n\
 	addi	$sp,	$sp,	20\n\
+	.cfi_adjust_cfa_offset -20	\n\
 	"STACK_POP"\n\
 	lmw.bim	$sp,	[$sp],	$sp,	6\n\
+	.cfi_adjust_cfa_offset -8	\n\
+	.cfi_restore gp			\n\
+	.cfi_restore lp			\n\
 	addi	$sp,	$sp,	8\n\
+	.cfi_adjust_cfa_offset -8	\n\
 	lmw.bim	$r2,	[$sp],	$r5,	0\n\
+	.cfi_adjust_cfa_offset -16	\n\
 	ret\n\
 \n\
+	.cfi_endproc			\n\
 	.size "#tramp_name", .-"#tramp_name"\n\
 \n\
 ");

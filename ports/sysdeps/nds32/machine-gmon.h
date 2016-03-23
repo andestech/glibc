@@ -41,15 +41,23 @@ asm (						\
 "	.align	2\n"				\
 "	.globl	_mcount\n"			\
 "	.type	_mcount, @function\n"		\
+"	.cfi_startproc\n"			\
 "_mcount:\n"					\
 "	smw.adm	$r0, [$sp], $r6, 0x2\n"		\
+"	.cfi_adjust_cfa_offset 32\n"		\
+"	.cfi_rel_offset lp, 28\n"		\
+"	.cfi_rel_offset r6, 24\n"		\
 "	move	$r1, $lp\n"			\
 "	lwi	$r0, [$sp+36]\n"		\
 "	"NDS32_STACK_PUSH_STR"\n"		\
 "	bal	__mcount_internal\n"		\
 "	"NDS32_STACK_POP_STR"\n"		\
 "	lmw.bim	$r0, [$sp], $r6, 0x2\n"		\
+"	.cfi_adjust_cfa_offset -32\n"		\
+"	.cfi_restore lp\n"			\
+"	.cfi_restore r6\n"			\
 "	ret\n"					\
+"	.cfi_endproc\n"				\
 "	.size _mcount, .-_mcount\n"		\
 );
 

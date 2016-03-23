@@ -18,14 +18,18 @@ long int syscall (long int __sysno, ...)
         __asm__ volatile ( "" ::: "memory" );
 	__asm__ volatile(
 	"addi10.sp\t  #-4\n\t"
+	".cfi_adjust_cfa_offset 4\n\t"
 	"push\t	%0\n\t"
+	".cfi_adjust_cfa_offset 4\n\t"
 	:
 	:"r"(arg6)
 	);
 	result = INLINE_SYSCALL(syscall,6,__sysno,arg1,arg2,arg3,arg4,arg5);
 	__asm__ volatile(
 	"pop\t	%0\n\t"
+	".cfi_adjust_cfa_offset -4\n\t"
 	"addi10.sp\t  #4\n\t"
+	".cfi_adjust_cfa_offset -4\n\t"
 	:"=r"(arg6)
 	);
 	return result;

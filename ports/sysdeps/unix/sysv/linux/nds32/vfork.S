@@ -52,6 +52,9 @@ ENTRY (__vfork)
 #  ifdef PIC
 	! set r1 as gp
 	pushm	$gp,	$lp
+	.cfi_adjust_cfa_offset 8
+	.cfi_rel_offset gp, 0
+	.cfi_rel_offset lp, 4
 	mfusr 	$r15, 	$PC
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4)
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8)
@@ -65,6 +68,9 @@ ENTRY (__vfork)
 	! jump to SYSCALL_ERROR
 	jral		$r15
 	popm	$gp,	$lp
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore lp
+	.cfi_restore gp
 	ret
 #  else
 	j C_SYMBOL_NAME(__syscall_error)
@@ -78,6 +84,9 @@ ENTRY (__vfork)
 3:
         ! set r1 as gp
 	pushm	$gp,	$lp
+	.cfi_adjust_cfa_offset 8
+	.cfi_rel_offset gp, 0
+	.cfi_rel_offset lp, 4
 	mfusr	$r15,   $PC
 	sethi   $gp,    hi20(_GLOBAL_OFFSET_TABLE_+4)
 	ori     $gp,    $gp,    lo12(_GLOBAL_OFFSET_TABLE_+8)
@@ -91,6 +100,9 @@ ENTRY (__vfork)
 	! jump to SYSCALL_ERROR
 	jral		$r15
 	popm	$gp,	$lp
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore lp
+	.cfi_restore gp
 	ret
 # else
         j C_SYMBOL_NAME(__syscall_error)

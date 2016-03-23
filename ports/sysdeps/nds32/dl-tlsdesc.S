@@ -24,11 +24,15 @@
 	.hidden _dl_tlsdesc_return
 	.global	_dl_tlsdesc_return
 	.type	_dl_tlsdesc_return,#function
+	CFI_SECTIONS
+	cfi_startproc
 	.align 2
 _dl_tlsdesc_return:
 	lwi	$r0,	[$r0	+ 4]
 	add	$r0,	$r0,	$r25
 	ret
+	cfi_endproc
+	.size   _dl_tlsdesc_return, .-_dl_tlsdesc_return
 
      /* This function is used for undefined weak TLS symbols, for
 	which the base address (i.e., disregarding any addend) should
@@ -43,14 +47,20 @@ _dl_tlsdesc_return:
 	.hidden _dl_tlsdesc_undefweak
 	.global	_dl_tlsdesc_undefweak
 	.type	_dl_tlsdesc_undefweak,#function
+	CFI_SECTIONS
+	cfi_startproc
 	.align 2
 _dl_tlsdesc_undefweak:
 	ret
+	cfi_endproc
+	.size   _dl_tlsdesc_undefweak, .-_dl_tlsdesc_undefweak
 
 #ifdef SHARED
 	.hidden _dl_tlsdesc_dynamic
 	.global	_dl_tlsdesc_dynamic
 	.type	_dl_tlsdesc_dynamic,#function
+	CFI_SECTIONS
+	cfi_startproc
 	.pic
 /*
 	The assembly code that follows is a rendition of the following
@@ -91,6 +101,9 @@ _dl_tlsdesc_dynamic:
 	ret
 2:
 	smw.adm $sp,[$sp],$sp,#0x6
+	.cfi_adjust_cfa_offset 8
+	.cfi_rel_offset gp, 0
+	.cfi_rel_offset lp, 4
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);	
 	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
@@ -100,7 +113,12 @@ _dl_tlsdesc_dynamic:
 	add	$r15, $r15, $gp
 	jral 	$r15
 	lmw.bim $sp,[$sp],$sp,#0x6
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore gp
+	.cfi_restore lp
 	j	1b
+	cfi_endproc
+	.size   _dl_tlsdesc_dynamic, .-_dl_tlsdesc_dynamic
 #endif
 
 
@@ -111,9 +129,14 @@ _dl_tlsdesc_dynamic:
 	.global	_dl_tlsdesc_resolve_rela
 	.type	_dl_tlsdesc_resolve_rela,#function
 	.pic
+	CFI_SECTIONS
+	cfi_startproc
 	.align 2
 _dl_tlsdesc_resolve_rela:
 	smw.adm $r0,[$sp],$r0,#0x6
+	.cfi_adjust_cfa_offset 8
+	.cfi_rel_offset gp, 0
+	.cfi_rel_offset lp, 4
 	lw	$r1,  [$r3]
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);	
@@ -124,8 +147,13 @@ _dl_tlsdesc_resolve_rela:
 	add	$r15, $r15, $gp
 	jral 	$r15
 	lmw.bim $r0,[$sp],$r0,#0x6
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore gp
+	.cfi_restore lp
 	lwi	$r1,  [$r0]
 	jr	$r1
+	cfi_endproc
+	.size   _dl_tlsdesc_resolve_rela, .-_dl_tlsdesc_resolve_rela
 
 
 
@@ -133,12 +161,17 @@ _dl_tlsdesc_resolve_rela:
 	.global	_dl_tlsdesc_resolve_hold
 	.type	_dl_tlsdesc_resolve_hold,#function
 	.pic
+	CFI_SECTIONS
+	cfi_startproc
 	.align 2
 _dl_tlsdesc_resolve_hold:
 
 	/*$r15 is used to adjust the $gp register
 	and get the address of _dl_tlsdesc_resolve_hold*/
 	smw.adm $r0,[$sp],$r0,#0x6
+	.cfi_adjust_cfa_offset 8
+	.cfi_rel_offset gp, 0
+	.cfi_rel_offset lp, 4
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);
 	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
@@ -149,5 +182,10 @@ _dl_tlsdesc_resolve_hold:
 	move	$r1,  $r15; 		/* $r1= _dl_tlsdesc_resolve_hold addr*/
 	jral 	$r15
 	lmw.bim $r0,[$sp],$r0,#0x6
+	.cfi_adjust_cfa_offset -8
+	.cfi_restore gp
+	.cfi_restore lp
 	lwi	$r1,  [$r0]
 	jr	$r1
+	cfi_endproc
+	.size   _dl_tlsdesc_resolve_hold, .-_dl_tlsdesc_resolve_hold

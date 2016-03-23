@@ -21,6 +21,9 @@
 #ifdef NDS_ABI_V1
 #define __do_syscall(syscall_name)		\
   pushm	$r7, $r8;				\
+  .cfi_adjust_cfa_offset 8;			\
+  .cfi_rel_offset r7, 0;			\
+  .cfi_rel_offset r8, 4;			\
   li	$r7, SYS_ify(syscall_name);  	\
   ori	$r7, $r7, lo12(SYS_ify(syscall_name)); 	\
   syscall	LIB_SYSCALL;			\
@@ -29,6 +32,9 @@
   beqz	$r5, 2f;				\
 1:						\
   popm	$r7, $r8;				\
+  .cfi_adjust_cfa_offset -8;			\
+  .cfi_restore r8;				\
+  .cfi_restore r7;				\
 2:
 #else
 #define __do_syscall(syscall_name)		\
@@ -63,7 +69,11 @@
 #define PSEUDO(name, syscall_name, args)	\
   .pic;						\
   .align 2;					\
+	cfi_startproc;				\
   99:	pushm	$gp,	$lp;			\
+	.cfi_adjust_cfa_offset 8;		\
+	.cfi_rel_offset gp, 0;			\
+	.cfi_rel_offset lp, 4;			\
 	mfusr	$r15,	$PC;			\
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_ + 4);	\
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_ + 8);\
@@ -73,8 +83,12 @@
 	add	$r15,	$r15,	$gp;		\
 	jral		$r15;			\
 	popm	$gp,	$lp;			\
+	.cfi_adjust_cfa_offset -8;		\
+	.cfi_restore lp;			\
+	.cfi_restore gp;			\
 	ret;					\
 	nop;                                   	\
+	cfi_endproc;				\
 	ENTRY(name);                          	\
 	__do_syscall(syscall_name);            	\
 	bgez $r0, 2f;				\
@@ -101,7 +115,9 @@
 
 #undef PSEUDO_END
 #define PSEUDO_END(sym)				\
+	cfi_endproc;				\
 	SYSCALL_ERROR_HANDLER			\
+	cfi_startproc;				\
 	END(sym)
 
 #undef PSEUDO_END_ERRVAL
@@ -114,11 +130,15 @@
 #define ret_NOERRNO ret
 
 #if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
-# define STACK_PUSH(count) addi $sp, $sp, count
-# define STACK_POP(count) addi $sp, $sp, count
+# define STACK_PUSH(count) addi $sp, $sp, count;		\
+			   .cfi_adjust_cfa_offset  -count
+# define STACK_POP(count) addi $sp, $sp, count;		\
+			  .cfi_adjust_cfa_offset  -count
 #else
-# define STACK_PUSH(count) addi $sp, $sp, -24+(count)
-# define STACK_POP(count) addi $sp, $sp, 24+(count)
+# define STACK_PUSH(count) addi $sp, $sp, -24+(count);	\
+			   .cfi_adjust_cfa_offset  24-(count)
+# define STACK_POP(count) addi $sp, $sp, 24+(count);	\
+			   .cfi_adjust_cfa_offset  -24+(count)
 #endif
 
 #if NOT_IN_libc
@@ -126,54 +146,85 @@
 # ifdef PIC
 #  ifdef __NDS32_N1213_43U1H__
 #define SYSCALL_ERROR_HANDLER				\
-__local_syscall_error:	pushm	$gp, $lp;				\
-	jal	1f;	\
+__local_syscall_error:					\
+	cfi_startproc;					\
+	pushm	$gp, $lp;				\
+	.cfi_adjust_cfa_offset 8;			\
+	.cfi_rel_offset gp, 0;				\
+	.cfi_rel_offset lp, 4;				\
+	jal	1f;					\
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_);	\
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+4);	\
 	add	$gp,	$gp,	$lp;	\
 	neg	$r0, $r0;	\
-	push	$r0;				\
+	push	$r0;					\
+	.cfi_adjust_cfa_offset 4;			\
 	STACK_PUSH(-4); \
 	bal	C_SYMBOL_NAME(__errno_location@PLT);	\
 	STACK_POP(4); \
 	pop	$r1;			\
+	.cfi_adjust_cfa_offset -4;			\
 	swi	$r1, [$r0];				\
 	li		$r0, -1;				\
 	popm	$gp, $lp;				\
+	.cfi_adjust_cfa_offset -8;			\
+	.cfi_restore lp;					\
+	.cfi_restore gp;					\
 1: \
-   ret;
+   ret;							\
+	cfi_endproc;
 #  else
 #define SYSCALL_ERROR_HANDLER				\
-__local_syscall_error:	pushm	$gp, $lp;				\
+__local_syscall_error:					\
+	cfi_startproc;                                  \
+	pushm	$gp, $lp;				\
+	.cfi_adjust_cfa_offset 8;			\
+	.cfi_rel_offset gp, 0;				\
+	.cfi_rel_offset lp, 4;				\
 	mfusr $r15, $PC;	\
 	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4);	\
 	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8);	\
 	add	$gp,	$gp,	$r15;	\
 	neg	$r0, $r0;	\
-	push	$r0;				\
+	push	$r0;					\
+	.cfi_adjust_cfa_offset 4;			\
 	STACK_PUSH(-4); \
 	bal	C_SYMBOL_NAME(__errno_location@PLT);	\
 	STACK_POP(4); \
 	pop	$r1;			\
+	.cfi_adjust_cfa_offset -4;			\
 	swi	$r1, [$r0];				\
 	li		$r0, -1;				\
 	popm	$gp, $lp;				\
+	.cfi_adjust_cfa_offset -8;			\
+	.cfi_restore lp;				\
+	.cfi_restore gp;				\
 1: \
-   ret;
+   ret;							\
+	cfi_endproc;
 #  endif
 # else
 #define SYSCALL_ERROR_HANDLER	\
-__local_syscall_error:	push	$lp;				\
-	neg	$r0, $r0;	\
-	push	$r0;				\
+__local_syscall_error:					\
+	cfi_startproc;					\
+	push	$lp;					\
+	.cfi_adjust_cfa_offset 4;			\
+	.cfi_rel_offset lp, 0;				\
+	neg	$r0, $r0;				\
+	push	$r0;					\
+	.cfi_adjust_cfa_offset 4;			\
 	STACK_PUSH(0); \
 	bal	C_SYMBOL_NAME(__errno_location);	\
 	STACK_POP(0); \
-	pop	$r1;			\
+	pop	$r1;					\
+	.cfi_adjust_cfa_offset -4;			\
 	swi	$r1, [$r0];				\
 	li		$r0, -1;				\
-	pop	$lp;				\
-	ret;
+	pop	$lp;					\
+	.cfi_adjust_cfa_offset -4;			\
+	.cfi_restore lp;					\
+	ret;						\
+	cfi_endproc;
 # endif
 
 #undef PUSH_STACK
