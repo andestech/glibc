@@ -20,39 +20,47 @@
 # error "Never use <bits/fenv.h> directly; include <fenv.h> instead."
 #endif
 
-/* Define bits representing exceptions in the FPSR status word.  */
+/* Define bits representing exceptions in the FPCSR status word.  */
 enum
   {
     FE_INVALID =
-#define FE_INVALID	1
+#define FE_INVALID	0x4
       FE_INVALID,
     FE_DIVBYZERO =
-#define FE_DIVBYZERO	2
+#define FE_DIVBYZERO	0x8
       FE_DIVBYZERO,
     FE_OVERFLOW =
-#define FE_OVERFLOW	4
+#define FE_OVERFLOW	0x10
       FE_OVERFLOW,
     FE_UNDERFLOW =
-#define FE_UNDERFLOW	8
+#define FE_UNDERFLOW	0x20
       FE_UNDERFLOW,
     FE_INEXACT =
-#define FE_INEXACT	16
+#define FE_INEXACT	0x40
       FE_INEXACT,
   };
 
-/* Amount to shift by to convert an exception bit in FPSR to a an
-   exception bit mask in FPCR.  */
-#define FE_EXCEPT_SHIFT	8
 
 /* All supported exceptions.  */
 #define FE_ALL_EXCEPT	\
 	(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW | FE_INEXACT)
 
-/* Define bits representing rounding modes in the FPCR Rmode field.  */
-#define FE_TONEAREST  0x000000
-#define FE_UPWARD     0x400000
-#define FE_DOWNWARD   0x800000
-#define FE_TOWARDZERO 0xc00000
+/* Define bits representing rounding modes in the FPCSR RM field.  */
+enum
+  {
+    FE_TONEAREST =
+#define FE_TONEAREST    0x0
+      FE_TONEAREST,
+    FE_UPWARD =
+#define FE_UPWARD       0x1
+      FE_UPWARD,
+    FE_DOWNWARD =
+#define FE_DOWNWARD     0x2
+      FE_DOWNWARD,
+    FE_TOWARDZERO =
+#define FE_TOWARDZERO   0x3
+      FE_TOWARDZERO
+  };
 
 /* Type representing exception flags. */
 typedef unsigned int fexcept_t;
@@ -60,8 +68,7 @@ typedef unsigned int fexcept_t;
 /* Type representing floating-point environment.  */
 typedef struct
   {
-    unsigned int __fpcr;
-    unsigned int __fpsr;
+    unsigned int __fpcsr;
   }
 fenv_t;
 
