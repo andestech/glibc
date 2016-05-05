@@ -57,7 +57,7 @@ __makecontext (ucontext_t *ucp, void (*func) (void), int argc, ...)
   ucp->uc_mcontext.nds32_r6 = (uintptr_t) ucp->uc_link;
   ucp->uc_mcontext.nds32_sp = (uintptr_t) sp;
   ucp->uc_mcontext.nds32_ipc = (uintptr_t) func;
-  ucp->uc_mcontext.nds32_lr = (uintptr_t) &__startcontext;
+  ucp->uc_mcontext.nds32_lp = (uintptr_t) &__startcontext;
 
   va_start (ap, argc);
   regptr = &ucp->uc_mcontext.nds32_r0;
