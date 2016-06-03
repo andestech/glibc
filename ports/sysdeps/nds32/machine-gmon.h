@@ -26,39 +26,10 @@ static void __mcount_internal (u_long frompc, u_long selfpc) __attribute_used__;
 #define _MCOUNT_DECL(frompc, selfpc) \
 static void __mcount_internal (u_long frompc, u_long selfpc)
 
-#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
-#define NDS32_STACK_PUSH_STR
-#define NDS32_STACK_POP_STR
-#else /* !(defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__))  */
-#define NDS32_STACK_PUSH_STR "addi $sp, $sp, -24"
-#define NDS32_STACK_POP_STR "addi $sp, $sp, 24"
-#endif /* !(defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__))  */
 
-#define MCOUNT					\
-asm (						\
-"\n"						\
-"	.text\n"				\
-"	.align	2\n"				\
-"	.globl	_mcount\n"			\
-"	.type	_mcount, @function\n"		\
-"	.cfi_startproc\n"			\
-"_mcount:\n"					\
-"	smw.adm	$r0, [$sp], $r6, 0x2\n"		\
-"	.cfi_adjust_cfa_offset 32\n"		\
-"	.cfi_rel_offset lp, 28\n"		\
-"	.cfi_rel_offset r6, 24\n"		\
-"	move	$r1, $lp\n"			\
-"	lwi	$r0, [$sp+36]\n"		\
-"	"NDS32_STACK_PUSH_STR"\n"		\
-"	bal	__mcount_internal\n"		\
-"	"NDS32_STACK_POP_STR"\n"		\
-"	lmw.bim	$r0, [$sp], $r6, 0x2\n"		\
-"	.cfi_adjust_cfa_offset -32\n"		\
-"	.cfi_restore lp\n"			\
-"	.cfi_restore r6\n"			\
-"	ret\n"					\
-"	.cfi_endproc\n"				\
-"	.size _mcount, .-_mcount\n"		\
-);
-
+#define MCOUNT							\
+void _mcount (u_long frompc)		      			\
+{								\
+  __mcount_internal (frompc, (u_long) RETURN_ADDRESS (0));	\
+}
 
