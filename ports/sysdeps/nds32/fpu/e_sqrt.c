@@ -18,7 +18,7 @@
 
 
 
-#ifdef __NDS32_ABI_2FP_PLUS__
+#if defined(__NDS32_ABI_2FP_PLUS__) && defined(__NDS32_EXT_FPU_DP__)
 
 double __ieee754_sqrt (double x)
 {
