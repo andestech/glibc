@@ -40,7 +40,13 @@ ENTRY (__vfork)
 #endif	
 
 #ifdef __NR_vfork
+# ifdef SAVE_PID
+    SAVE_PID
+# endif
     syscall __NR_vfork
+# ifdef RESTORE_PID
+    RESTORE_PID
+# endif
     bltz $r0, 2f
 1:
     ret
