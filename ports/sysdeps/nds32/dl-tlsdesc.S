@@ -24,7 +24,6 @@
 	.hidden _dl_tlsdesc_return
 	.global	_dl_tlsdesc_return
 	.type	_dl_tlsdesc_return,#function
-	CFI_SECTIONS
 	cfi_startproc
 	.align 2
 _dl_tlsdesc_return:
@@ -47,7 +46,6 @@ _dl_tlsdesc_return:
 	.hidden _dl_tlsdesc_undefweak
 	.global	_dl_tlsdesc_undefweak
 	.type	_dl_tlsdesc_undefweak,#function
-	CFI_SECTIONS
 	cfi_startproc
 	.align 2
 _dl_tlsdesc_undefweak:
@@ -59,7 +57,6 @@ _dl_tlsdesc_undefweak:
 	.hidden _dl_tlsdesc_dynamic
 	.global	_dl_tlsdesc_dynamic
 	.type	_dl_tlsdesc_dynamic,#function
-	CFI_SECTIONS
 	cfi_startproc
 	.pic
 /*
@@ -129,7 +126,6 @@ _dl_tlsdesc_dynamic:
 	.global	_dl_tlsdesc_resolve_rela
 	.type	_dl_tlsdesc_resolve_rela,#function
 	.pic
-	CFI_SECTIONS
 	cfi_startproc
 	.align 2
 _dl_tlsdesc_resolve_rela:
@@ -161,7 +157,6 @@ _dl_tlsdesc_resolve_rela:
 	.global	_dl_tlsdesc_resolve_hold
 	.type	_dl_tlsdesc_resolve_hold,#function
 	.pic
-	CFI_SECTIONS
 	cfi_startproc
 	.align 2
 _dl_tlsdesc_resolve_hold:

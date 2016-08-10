@@ -23,8 +23,13 @@
    instruction on the stack, which would involve expensive cache flushes. */
 
 ENTRY(__default_sa_restorer)
+	cfi_endproc;
+	.cfi_sections .debug_frame;
+	cfi_startproc;
    /* DO NOT SAVE r7 INTO STACK, THIS SYSCALL NEVER RETURN */
 	syscall	SYS_ify(sigreturn)
+	cfi_endproc;
+	cfi_startproc;
 
 END(__default_sa_restorer)
 
@@ -32,7 +37,12 @@ END(__default_sa_restorer)
 
 ENTRY(__default_rt_sa_restorer)
    /* DO NOT SAVE r7 INTO STACK, THIS SYSCALL NEVER RETURN */
+	cfi_endproc;
+	.cfi_sections .debug_frame;
+	cfi_startproc;
 	syscall	SYS_ify(rt_sigreturn)
+	cfi_endproc;
+	cfi_startproc;
 
 END(__default_rt_sa_restorer)
 

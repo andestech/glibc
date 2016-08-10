@@ -45,7 +45,6 @@ asm ("\n\
 	.globl "#tramp_name"\n\
 	.type "#tramp_name", #function\n\
 	.align 4\n\
-	.cfi_sections .debug_frame\n\
 	.cfi_startproc\n\
 "#tramp_name":\n\
 	! we get called with\n\

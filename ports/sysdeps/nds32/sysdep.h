@@ -11,7 +11,6 @@
   .func  C_SYMBOL_NAME(name);            \
   .type  C_SYMBOL_NAME(name), @function; \
 C_SYMBOL_NAME(name):			 \
-	CFI_SECTIONS;			 \
 	cfi_startproc;
 #else
 #define ENTRY(name)                      \
@@ -20,12 +19,9 @@ C_SYMBOL_NAME(name):			 \
   .func  C_SYMBOL_NAME(name);            \
   .type  C_SYMBOL_NAME(name), @function; \
 C_SYMBOL_NAME(name):			 \
-	CFI_SECTIONS;			 \
 	cfi_startproc;
 #endif
 
-#define CFI_SECTIONS			\
-	.cfi_sections .debug_frame
 
 #undef END
 #define END(name) \
