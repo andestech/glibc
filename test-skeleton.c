@@ -327,8 +327,8 @@ main (int argc, char *argv[])
 
   /* Set timeout.  */
 #ifndef TIMEOUT
-  /* Default timeout is two seconds.  */
-# define TIMEOUT 2
+  /* Extend Default timeout from second seconds to 60 mins */
+# define TIMEOUT 60*60
 #endif
   signal (SIGALRM, signal_handler);
   alarm (TIMEOUT * timeoutfactor);
