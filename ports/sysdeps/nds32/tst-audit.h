@@ -19,4 +19,4 @@
 #define pltexit la_nds32_gnu_pltexit
 #define La_regs La_nds32_regs
 #define La_retval La_nds32_retval
-#define int_retval lrv_reg0
+#define int_retval lrv_reg[0]

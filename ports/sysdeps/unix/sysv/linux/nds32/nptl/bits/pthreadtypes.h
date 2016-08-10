@@ -188,12 +188,11 @@ typedef union
   int __align;
 } pthread_barrierattr_t;
 #endif
-
-
 /* Extra attributes for the cleanup functions.  */
-// FIXME, check this after gcc uprgrade.
-// #define __cleanup_fct_attribute __attribute__ ((__regparm__ (1)))
-// warning: '__regparm__' attribute directive ignored
-
+/*
+ FIXME, check this after gcc uprgrade.
+ #define __cleanup_fct_attribute __attribute__ ((__regparm__ (1)))
+ warning: '__regparm__' attribute directive ignored
+*/
 
 #endif	/* bits/pthreadtypes.h */
