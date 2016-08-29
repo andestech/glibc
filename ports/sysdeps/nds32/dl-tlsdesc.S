@@ -130,9 +130,12 @@ _dl_tlsdesc_dynamic:
 	.align 2
 _dl_tlsdesc_resolve_rela:
 	smw.adm $r0,[$sp],$r0,#0x6
-	.cfi_adjust_cfa_offset 8
-	.cfi_rel_offset gp, 0
-	.cfi_rel_offset lp, 4
+	.cfi_adjust_cfa_offset 12
+	.cfi_rel_offset r0, 0
+	.cfi_rel_offset gp, 4
+	.cfi_rel_offset lp, 8
+	addi    $sp, $sp, -4
+	.cfi_adjust_cfa_offset 4
 	lw	$r1,  [$r3]
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);	
@@ -142,8 +145,11 @@ _dl_tlsdesc_resolve_rela:
 	ori	$r15, $r15, lo12(_dl_tlsdesc_resolve_rela_fixup@PLT);
 	add	$r15, $r15, $gp
 	jral 	$r15
+	addi    $sp, $sp, 4
+	.cfi_adjust_cfa_offset -4
 	lmw.bim $r0,[$sp],$r0,#0x6
-	.cfi_adjust_cfa_offset -8
+	.cfi_adjust_cfa_offset -12
+	.cfi_restore r0
 	.cfi_restore gp
 	.cfi_restore lp
 	lwi	$r1,  [$r0]
@@ -164,9 +170,12 @@ _dl_tlsdesc_resolve_hold:
 	/*$r15 is used to adjust the $gp register
 	and get the address of _dl_tlsdesc_resolve_hold*/
 	smw.adm $r0,[$sp],$r0,#0x6
-	.cfi_adjust_cfa_offset 8
-	.cfi_rel_offset gp, 0
-	.cfi_rel_offset lp, 4
+	.cfi_adjust_cfa_offset 12
+	.cfi_rel_offset r0, 0
+	.cfi_rel_offset gp, 4
+	.cfi_rel_offset lp, 8
+	addi    $sp, $sp, -4
+	.cfi_adjust_cfa_offset 4
 	mfusr 	$r15, $PC;
 	sethi 	$gp,  hi20(_GLOBAL_OFFSET_TABLE_ + 4);
 	ori   	$gp,  $gp,  lo12(_GLOBAL_OFFSET_TABLE_ + 8);
@@ -176,8 +185,11 @@ _dl_tlsdesc_resolve_hold:
 	add	$r15, $r15, $gp
 	move	$r1,  $r15; 		/* $r1= _dl_tlsdesc_resolve_hold addr*/
 	jral 	$r15
+	addi    $sp, $sp, 4
+	.cfi_adjust_cfa_offset -4
 	lmw.bim $r0,[$sp],$r0,#0x6
-	.cfi_adjust_cfa_offset -8
+	.cfi_adjust_cfa_offset -12
+	.cfi_restore r0
 	.cfi_restore gp
 	.cfi_restore lp
 	lwi	$r1,  [$r0]

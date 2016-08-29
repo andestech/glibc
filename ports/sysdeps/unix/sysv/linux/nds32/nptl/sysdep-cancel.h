@@ -24,52 +24,86 @@
 
 
 #define PUSHARGS_0
-#define PUSHARGS_1	smw.adm $r0, [$sp], $r0;	\
+#define PUSHARGS_1	smw.adm $r0, [$sp], $r0, #0;	\
 			.cfi_adjust_cfa_offset 4;	\
-			.cfi_rel_offset r0, 0;
-#define PUSHARGS_2	smw.adm $r0, [$sp], $r1;	\
+			.cfi_rel_offset r0, 0;		\
+			addi	$sp, $sp, -4;		\
+			.cfi_adjust_cfa_offset 4;
+#define PUSHARGS_2	smw.adm $r0, [$sp], $r1, #0;	\
 			.cfi_adjust_cfa_offset 8;	\
 			.cfi_rel_offset r1, 4;		\
 			.cfi_rel_offset r0, 0;
-#define PUSHARGS_3	smw.adm $r0, [$sp], $r2;	\
+#define PUSHARGS_3	smw.adm $r0, [$sp], $r2, #0;	\
 			.cfi_adjust_cfa_offset 12;	\
 			.cfi_rel_offset r2, 8;		\
 			.cfi_rel_offset r1, 4;		\
-			.cfi_rel_offset r0, 0;
-#define PUSHARGS_4	smw.adm $r0, [$sp], $r3;	\
+			.cfi_rel_offset r0, 0;		\
+			addi	$sp, $sp, -4;		\
+			.cfi_adjust_cfa_offset 4;
+#define PUSHARGS_4	smw.adm $r0, [$sp], $r3, #0;	\
 			.cfi_adjust_cfa_offset 16;	\
 			.cfi_rel_offset r3, 12;		\
 			.cfi_rel_offset r2, 8;		\
 			.cfi_rel_offset r1, 4;		\
 			.cfi_rel_offset r0, 0;
-#define PUSHARGS_5	smw.adm $r0, [$sp], $r4;	\
-			.cfi_adjust_cfa_offset 20;
-#define PUSHARGS_6	smw.adm $r0, [$sp], $r5;	\
-			.cfi_adjust_cfa_offset 24;
+#define PUSHARGS_5	smw.adm $r0, [$sp], $r4, #0;	\
+			.cfi_adjust_cfa_offset 20;	\
+			.cfi_rel_offset r4, 16;		\
+			.cfi_rel_offset r3, 12;		\
+			.cfi_rel_offset r2, 8;		\
+			.cfi_rel_offset r1, 4;		\
+			.cfi_rel_offset r0, 0;		\
+			addi	$sp, $sp, -4;		\
+			.cfi_adjust_cfa_offset 4;
+#define PUSHARGS_6	smw.adm $r0, [$sp], $r5, #0;	\
+			.cfi_adjust_cfa_offset 24;	\
+			.cfi_rel_offset r5, 20;		\
+			.cfi_rel_offset r4, 16;		\
+			.cfi_rel_offset r3, 12;		\
+			.cfi_rel_offset r2, 8;		\
+			.cfi_rel_offset r1, 4;		\
+			.cfi_rel_offset r0, 0;
 
 #define POPARGS2_0
-#define POPARGS2_1	lmw.bim $r0, [$sp], $r0;	\
+#define POPARGS2_1	addi	$sp, $sp, 4;		\
+			.cfi_adjust_cfa_offset -4;	\
+			lmw.bim $r0, [$sp], $r0, #0;	\
 			.cfi_adjust_cfa_offset -4;	\
 			.cfi_restore r0;
-#define POPARGS2_2	lmw.bim $r0, [$sp], $r1;	\
+#define POPARGS2_2	lmw.bim $r0, [$sp], $r1, #0;	\
 			.cfi_adjust_cfa_offset -8;	\
 			.cfi_restore r0;		\
 			.cfi_restore r1;
-#define POPARGS2_3	lmw.bim $r0, [$sp], $r2;	\
+#define POPARGS2_3	addi	$sp, $sp, 4;		\
+			.cfi_adjust_cfa_offset -4;	\
+			lmw.bim $r0, [$sp], $r2, #0;	\
 			.cfi_adjust_cfa_offset -12;	\
 			.cfi_restore r0;		\
 			.cfi_restore r1;		\
-			.cfi_restore r2
-#define POPARGS2_4	lmw.bim $r0, [$sp], $r3;	\
+			.cfi_restore r2;
+#define POPARGS2_4	lmw.bim $r0, [$sp], $r3, #0;	\
 			.cfi_adjust_cfa_offset -16;	\
 			.cfi_restore r0;		\
 			.cfi_restore r1;		\
 			.cfi_restore r2;		\
-			.cfi_restore r3
-#define POPARGS2_5	lmw.bim $r0, [$sp], $r4;	\
-			.cfi_adjust_cfa_offset -20;
-#define POPARGS2_6	lmw.bim $r0, [$sp], $r5;	\
-			.cfi_adjust_cfa_offset -24;
+			.cfi_restore r3;
+#define POPARGS2_5	addi	$sp, $sp, 4;		\
+			.cfi_adjust_cfa_offset -4;	\
+			lmw.bim $r0, [$sp], $r4, #0;	\
+			.cfi_adjust_cfa_offset -20;	\
+			.cfi_restore r0;		\
+			.cfi_restore r1;		\
+			.cfi_restore r2;		\
+			.cfi_restore r3;		\
+			.cfi_restore r4;
+#define POPARGS2_6	lmw.bim $r0, [$sp], $r5, #0;	\
+			.cfi_adjust_cfa_offset -24;	\
+			.cfi_restore r0;		\
+			.cfi_restore r1;		\
+			.cfi_restore r2;		\
+			.cfi_restore r3;		\
+			.cfi_restore r4;		\
+			.cfi_restore r5;
 
 #if !defined NOT_IN_libc || defined IS_IN_libpthread || defined IS_IN_librt
 
@@ -104,8 +138,12 @@
 	push $r0;                                                       \
 	.cfi_adjust_cfa_offset 4;					\
 	.cfi_rel_offset r0, 0;						\
+	addi $sp, $sp, -4;						\
+	.cfi_adjust_cfa_offset 4;					\
         mov55	$r0, $r6;		/* save syscall return value. */\
 	CDISABLE($r5);							\
+	addi $sp, $sp, 4;						\
+	.cfi_adjust_cfa_offset -4;					\
         pop $r0;                          /* retrieve return value.  */	\
 	.cfi_adjust_cfa_offset -4;					\
 	.cfi_restore r0;						\
