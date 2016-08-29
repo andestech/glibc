@@ -23,11 +23,6 @@ sysdep_routines += cacheflush prctl mremap
 endif
 
 
-ifeq ($(subdir),signal)
-sysdep_routines += sigrestorer
-endif
-
-
 ifeq ($(subdir),stdlib)
 gen-as-const-headers += ucontext_i.sym
 endif
