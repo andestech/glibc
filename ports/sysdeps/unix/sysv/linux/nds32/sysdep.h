@@ -427,7 +427,36 @@ __local_syscall_error:					\
        : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
         __res;                                                   \
   })
-
+#define internal_syscall7(name, err, arg1, arg2, arg3, arg4, arg5, arg6, arg7)  \
+  ({                                                                            \
+       register long __res  __asm__("$r0");                                     \
+       register long __arg1 __asm__("$r0") = (long) (arg1);                     \
+       register long __arg2 __asm__("$r1") = (long) (arg2);                     \
+       register long __arg3 __asm__("$r2") = (long) (arg3);                     \
+       register long __arg4 __asm__("$r3") = (long) (arg4);                     \
+       register long __arg5 __asm__("$r4") = (long) (arg5);                     \
+       register long __arg6 __asm__("$r5") = (long) (arg6);                     \
+       __asm__ volatile (                                                       \
+        "addi10.sp\t  #-4\n\t"                                                  \
+        ".cfi_adjust_cfa_offset 4\n\t"                                          \
+        "push\t %7\n\t"                                                         \
+        ".cfi_adjust_cfa_offset 4\n\t"                                          \
+       __issue_syscall (name)                                                   \
+        "addi10.sp\t  #4\n\t"                                                   \
+        ".cfi_adjust_cfa_offset 4\n\t"                                          \
+        "pop\t %7\n\t"                                                          \
+        ".cfi_adjust_cfa_offset 4\n\t"                                          \
+       : "=r" (__res)         /* output operands  */                            \
+       : "r" (__arg1)         /* input operands  */                             \
+       , "r" (__arg2)         /* input operands  */                             \
+       , "r" (__arg3)         /* input operands  */                             \
+       , "r" (__arg4)         /* input operands  */                             \
+       , "r" (__arg5)         /* input operands  */                             \
+       , "r" (__arg6)         /* input operands  */                             \
+       , "r" (arg7)         /* input operands  */                       \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */                \
+        __res;                                                                  \
+  })
 #define internal_syscall_ncs0(name, err, dummy...)               \
   ({                                                             \
        register long __res  asm ("$r0");                         \
