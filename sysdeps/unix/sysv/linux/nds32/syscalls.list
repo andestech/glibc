@@ -1,0 +1,21 @@
+# File name	Caller	Syscall name	# args	Strong name	Weak names
+prlimit64	EXTRA	prlimit64	i:iipp	prlimit64
+
+fanotify_mark	EXTRA	fanotify_mark	i:iiiiis	fanotify_mark
+# File name	Caller	Syscall name	Args	Strong name	Weak names
+accept		-	accept		Ci:iBN	__libc_accept	__accept accept
+bind		-	bind		i:ipi	__bind		bind
+connect		-	connect		Ci:ipi	__libc_connect	__connect connect
+getpeername	-	getpeername	i:ipp	__getpeername	getpeername
+getsockname	-	getsockname	i:ipp	__getsockname	getsockname
+getsockopt	-	getsockopt	i:iiiBN	__getsockopt	getsockopt
+listen		-	listen		i:ii	__listen	listen
+recvfrom	-	recvfrom	Ci:ibniBN __libc_recvfrom __recvfrom recvfrom
+recvmsg		-	recvmsg		Ci:ipi	__libc_recvmsg	__recvmsg recvmsg
+sendmsg		-	sendmsg		Ci:ipi	__libc_sendmsg	__sendmsg sendmsg
+sendto		-	sendto		Ci:ibnibn __libc_sendto	__sendto sendto
+setsockopt	-	setsockopt	i:iiibn	__setsockopt	setsockopt
+shutdown	-	shutdown	i:ii	__shutdown	shutdown
+socket		-	socket		i:iii	__socket	socket
+socketpair	-	socketpair	i:iiif	__socketpair	socketpair
+cacheflush	-	cacheflush	i:pii	_flush_cache	cacheflush

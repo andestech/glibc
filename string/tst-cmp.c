@@ -206,7 +206,7 @@ do_test (void)
 
 /* The nested loops need a long time to complete on slower
    machines.  */
-#define TIMEOUT 300
+#define TIMEOUT 5400
 
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"

@@ -51,7 +51,7 @@ close (STDSYMS) || die ("close $stdsyms_file: $!\n");
 # by IA64 too for the same reason.
 #
 @whitelist = qw(stdin stdout stderr re_syntax_options matherr matherrf
-		matherrl);
+		matherrl scalbn scalbnf);
 foreach my $sym (@whitelist) {
   $stdsyms{$sym} = 1;
 }

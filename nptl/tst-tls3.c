@@ -41,7 +41,7 @@ static pthread_t th[N];
 
 static int do_test (void);
 
-#define TIMEOUT 5
+#define TIMEOUT 200
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"
 

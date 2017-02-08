@@ -1,0 +1,3 @@
+case "$machine" in
+nds32*)    base_machine=nds32 machine=nds32 ;;
+esac

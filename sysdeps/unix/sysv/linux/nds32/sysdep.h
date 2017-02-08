@@ -1,0 +1,404 @@
+#ifndef _LINUX_NDS32_SYSDEP_H
+#define _LINUX_NDS32_SYSDEP_H 1
+
+#include <sysdeps/unix/sysdep.h>
+#include <sysdeps/nds32/sysdep.h>
+#include <sysdeps/unix/sysv/linux/generic/sysdep.h>
+
+/* Defines RTLD_PRIVATE_ERRNO and USE_DL_SYSINFO.  */
+#include <dl-sysdep.h>
+
+#include <tls.h>
+
+/* In order to get __set_errno() definition in INLINE_SYSCALL.  */
+#ifndef __ASSEMBLER__
+#include <errno.h>
+#endif
+
+
+#define        LIB_SYSCALL    __NR_syscall
+
+#undef SYS_ify
+#ifdef __STDC__
+#define SYS_ify(syscall_name) __NR_##syscall_name
+#else /* ! __STDC__  */
+#define SYS_ify(syscall_name) __NR_/**/syscall_name
+#endif /* ! __STDC__  */
+
+#ifdef __ASSEMBLER__
+
+/* Child's $SP for clone syscall will be $r1, 
+ * so the pushed $r7, $r8 will not be in cloned child's stack.
+ */
+#define __do_syscall(syscall_name)		\
+  movi	$r15,	SYS_ify(syscall_name);		\
+  syscall	0x0;
+
+/* We negate the return value because Linux will return a negated errno. */
+#ifdef PIC
+#define PSEUDO(name, syscall_name, args)	\
+  .pic;						\
+  .align 2;					\
+	cfi_startproc;				\
+  99:	pushm	$gp,	$lp;			\
+	.cfi_adjust_cfa_offset 8;		\
+	.cfi_rel_offset gp, 0;			\
+	.cfi_rel_offset lp, 4;			\
+	mfusr	$r15,	$PC;			\
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_ + 4);	\
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_ + 8);\
+	add	$gp,	$r15,	$gp;		\
+	sethi	$r15,	hi20(SYSCALL_ERROR@PLT);		\
+	ori	$r15,	$r15,	lo12(SYSCALL_ERROR@PLT);	\
+	add	$r15,	$r15,	$gp;		\
+	jral		$r15;			\
+	popm	$gp,	$lp;			\
+	.cfi_adjust_cfa_offset -8;		\
+	.cfi_restore lp;			\
+	.cfi_restore gp;			\
+	ret;					\
+	nop;                                   	\
+	cfi_endproc;				\
+	ENTRY(name);                          	\
+	__do_syscall(syscall_name);            	\
+	bgez $r0, 2f;				\
+	sltsi	$r1, $r0, -4096;		\
+	beqz	$r1, 99b;			\
+  2:
+#else
+#define PSEUDO(name, syscall_name, args)	\
+  .align 2;					\
+  99:	j SYSCALL_ERROR;                  	\
+	nop;                                   	\
+	ENTRY(name);                          	\
+	__do_syscall(syscall_name);            	\
+        bgez $r0, 2f;                           \
+        sltsi   $r1, $r0, -4096;                \
+        beqz    $r1, 99b;                       \
+  2:
+#endif
+
+#define PSEUDO_NOERRNO(name, syscall_name, args) \
+  ENTRY(name);                                   \
+  __do_syscall(syscall_name);
+
+#undef PSEUDO_END
+#define PSEUDO_END(sym)				\
+	cfi_endproc;				\
+	SYSCALL_ERROR_HANDLER			\
+	cfi_startproc;				\
+	END(sym)
+
+#undef PSEUDO_END_ERRVAL
+#define PSEUDO_END_ERRVAL(sym) END(sym)
+
+#define PSEUDO_ERRVAL(name, syscall_name, args) PSEUDO_NOERRNO(name, syscall_name, args)
+
+#define ret_ERRVAL ret
+
+#define ret_NOERRNO ret
+
+# define STACK_PUSH(count) addi $sp, $sp, count;		\
+			   .cfi_adjust_cfa_offset  -count
+# define STACK_POP(count) addi $sp, $sp, count;		\
+			  .cfi_adjust_cfa_offset  -count
+
+#if !IS_IN (libc)
+# define SYSCALL_ERROR __local_syscall_error
+# if RTLD_PRIVATE_ERRNO
+#  ifdef PIC
+#  define SYSCALL_ERROR_HANDLER				\
+__local_syscall_error:					\
+	cfi_startproc;                                  \
+	push	$gp;					\
+	.cfi_adjust_cfa_offset 4;			\
+	.cfi_rel_offset gp, 0;				\
+	mfusr  	$r15, 	$PC;				\
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4);	\
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8);	\
+	add	$gp,	$gp,	$r15;			\
+	sethi   $r1,	hi20(rtld_errno@GOTOFF);	\
+	ori	$r1,	$r1,	lo12(rtld_errno@GOTOFF);\
+	neg	$r0, 	$r0;				\
+	sw 	$r0,	[$r1+$gp];			\
+	li	$r0, 	-1;				\
+	pop	$gp;					\
+	.cfi_adjust_cfa_offset -4;			\
+	.cfi_restore gp;				\
+	ret;						\
+	cfi_endproc;
+#  else
+#  define SYSCALL_ERROR_HANDLER				\
+__local_syscall_error:					\
+	cfi_startproc;                                  \
+	sethi   $r1,	hi20(rtld_errno);		\
+	ori	$r1,	$r1,	lo12(rtld_errno);	\
+	neg	$r0, 	$r0;				\
+	sw 	$r0,	[$r1];				\
+	li		$r0, -1;			\
+	ret;						\
+	cfi_endproc;
+#  endif
+# else
+#  ifdef PIC
+#  define SYSCALL_ERROR_HANDLER				\
+__local_syscall_error:					\
+	cfi_startproc;                                  \
+	pushm	$gp, $lp;				\
+	.cfi_adjust_cfa_offset 8;			\
+	.cfi_rel_offset gp, 0;				\
+	.cfi_rel_offset lp, 4;				\
+	mfusr $r15, $PC;	\
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4);	\
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8);	\
+	add	$gp,	$gp,	$r15;	\
+	neg	$r0, $r0;	\
+	push	$r0;					\
+	.cfi_adjust_cfa_offset 4;			\
+	STACK_PUSH(-4); \
+	bal	C_SYMBOL_NAME(__errno_location@PLT);	\
+	STACK_POP(4); \
+	pop	$r1;			\
+	.cfi_adjust_cfa_offset -4;			\
+	swi	$r1, [$r0];				\
+	li		$r0, -1;				\
+	popm	$gp, $lp;				\
+	.cfi_adjust_cfa_offset -8;			\
+	.cfi_restore lp;				\
+	.cfi_restore gp;				\
+	ret;							\
+	cfi_endproc;
+#  else
+#  define SYSCALL_ERROR_HANDLER	\
+__local_syscall_error:					\
+	cfi_startproc;					\
+	push	$lp;					\
+	.cfi_adjust_cfa_offset 4;			\
+	.cfi_rel_offset lp, 0;				\
+	neg	$r0, $r0;				\
+	push	$r0;					\
+	.cfi_adjust_cfa_offset 4;			\
+	STACK_PUSH(0); \
+	bal	C_SYMBOL_NAME(__errno_location);	\
+	STACK_POP(0); \
+	pop	$r1;					\
+	.cfi_adjust_cfa_offset -4;			\
+	swi	$r1, [$r0];				\
+	li		$r0, -1;				\
+	pop	$lp;					\
+	.cfi_adjust_cfa_offset -4;			\
+	.cfi_restore lp;					\
+	ret;						\
+	cfi_endproc;
+#  endif
+# endif
+#undef PUSH_STACK
+#undef POP_STACK
+
+#else
+#define SYSCALL_ERROR_HANDLER	/* Nothing here; code in sysdep.S is used. */
+#define SYSCALL_ERROR HIDDEN_JUMPTARGET(__syscall_error)
+#endif
+
+#else /* ! __ASSEMBLER__  */
+
+# define HAVE_GETTIMEOFDAY_VSYSCALL	1
+# define HAVE_CLOCK_GETRES_VSYSCALL	1
+# define HAVE_CLOCK_GETTIME_VSYSCALL	1
+
+#define __issue_syscall(syscall_name)                   \
+"       syscall  0x0;\n"
+
+#undef INLINE_SYSCALL
+#define INLINE_SYSCALL(name, nr, args...)                        \
+  ({                                                             \
+     INTERNAL_SYSCALL_DECL (err);                                \
+     long result_var = INTERNAL_SYSCALL (name, err, nr, args);   \
+     if (INTERNAL_SYSCALL_ERROR_P (result_var, err))             \
+       {                                                         \
+         __set_errno (INTERNAL_SYSCALL_ERRNO (result_var, err)); \
+			result_var = -1 ;			 \
+       }                                                         \
+     result_var;                                                 \
+  })
+
+#undef INLINE_SYSCALL_NCS
+#define INLINE_SYSCALL_NCS(name, nr, args...)                        \
+  ({                                                             \
+     INTERNAL_SYSCALL_DECL (err);                                \
+     long result_var = INTERNAL_SYSCALL_NCS (name, err, nr, args);   \
+     if (INTERNAL_SYSCALL_ERROR_P (result_var, err))             \
+       {                                                         \
+         __set_errno (INTERNAL_SYSCALL_ERRNO (result_var, err)); \
+			result_var = -1 ;			 \
+       }                                                         \
+     result_var;                                                 \
+  })
+#undef INTERNAL_SYSCALL_DECL
+#define INTERNAL_SYSCALL_DECL(err) do { } while (0)
+
+#undef INTERNAL_SYSCALL_ERROR_P
+/* #define INTERNAL_SYSCALL_ERROR_P(val, err) (((long) (val)) < 0) */
+#define INTERNAL_SYSCALL_ERROR_P(val, err) ((unsigned int) (val) >= 0xfffff001u)
+
+#undef INTERNAL_SYSCALL_ERRNO
+/* #define INTERNAL_SYSCALL_ERRNO(val, err) (err) */
+#define INTERNAL_SYSCALL_ERRNO(val, err)	(-(val))
+
+#undef INTERNAL_SYSCALL
+#define INTERNAL_SYSCALL(name, err, nr, args...) internal_syscall##nr(__NR_##name, err, args)
+
+/*
+   The _NCS variant allows non-constant syscall numbers but it is not
+   possible to use more than four parameters.  
+*/
+
+#undef INTERNAL_SYSCALL_NCS
+#define INTERNAL_SYSCALL_NCS(name, err, nr, args...) internal_syscall##nr(name, err, args)
+
+/* We negate the return value because Linux will return a negated errno. */
+#define __syscall_result(err, res)	                        \
+  do                                                            \
+    {                                                           \
+      if ((unsigned long) res >= (unsigned long) (- (124 + 1))) \
+      {                                                         \
+          err = - (res);                                        \
+          res = -1;                                             \
+      }                                                         \
+    }                                                           \
+  while (0)
+
+#define internal_syscall0(name, err, dummy...)                   \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+       __res;							 \
+  })
+
+#define internal_syscall1(name, err, arg1)                       \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       , "r" (__arg1)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+        __res;                                                   \
+  })
+
+#define internal_syscall2(name, err, arg1, arg2)                 \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       , "r" (__arg1)         /* input operands  */              \
+       , "r" (__arg2)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+        __res;                                                   \
+  })
+
+#define internal_syscall3(name, err, arg1, arg2, arg3)           \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       , "r" (__arg1)         /* input operands  */              \
+       , "r" (__arg2)         /* input operands  */              \
+       , "r" (__arg3)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+        __res;                                                   \
+  })
+
+#define internal_syscall4(name, err, arg1, arg2, arg3, arg4)     \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       register long __arg4 asm ("$r3") = (long) (arg4);         \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       , "r" (__arg1)         /* input operands  */              \
+       , "r" (__arg2)         /* input operands  */              \
+       , "r" (__arg3)         /* input operands  */              \
+       , "r" (__arg4)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+        __res;                                                   \
+  })
+
+#define internal_syscall5(name, err, arg1, arg2, arg3, arg4, arg5) \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       register long __arg4 asm ("$r3") = (long) (arg4);         \
+       register long __arg5 asm ("$r4") = (long) (arg5);         \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       , "r" (__arg1)         /* input operands  */              \
+       , "r" (__arg2)         /* input operands  */              \
+       , "r" (__arg3)         /* input operands  */              \
+       , "r" (__arg4)         /* input operands  */              \
+       , "r" (__arg5)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+        __res;                                                   \
+  })
+
+#define internal_syscall6(name, err, arg1, arg2, arg3, arg4, arg5, arg6) \
+  ({                                                             \
+       register long __res  asm ("$r0");                         \
+       register long __num asm ("$r15") = (long) (name);   	 \
+       register long __arg1 asm ("$r0") = (long) (arg1);         \
+       register long __arg2 asm ("$r1") = (long) (arg2);         \
+       register long __arg3 asm ("$r2") = (long) (arg3);         \
+       register long __arg4 asm ("$r3") = (long) (arg4);         \
+       register long __arg5 asm ("$r4") = (long) (arg5);         \
+       register long __arg6 asm ("$r5") = (long) (arg6);         \
+       __asm__ volatile (                                        \
+       __issue_syscall (name)                                    \
+       : "=r" (__res)         /* output operands  */             \
+       : "r" (__num)         /* input operands  */              \
+       , "r" (__arg1)         /* input operands  */              \
+       , "r" (__arg2)         /* input operands  */              \
+       , "r" (__arg3)         /* input operands  */              \
+       , "r" (__arg4)         /* input operands  */              \
+       , "r" (__arg5)         /* input operands  */              \
+       , "r" (__arg6)         /* input operands  */              \
+       : __SYSCALL_CLOBBERS); /* list of clobbered registers  */ \
+        __res;                                                   \
+  })
+
+#define __SYSCALL_CLOBBERS "$lp", "memory"
+
+#endif /* ! __ASSEMBLER__  */
+
+#define PTR_MANGLE(var) (void) (var)
+#define PTR_DEMANGLE(var) (void) (var)
+
+#endif /* _LINUX_NDS32_SYSDEP_H  */

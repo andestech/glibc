@@ -87,6 +87,6 @@ do_test (void)
   return thread_fail;
 }
 
-#define TIMEOUT 10
+#define TIMEOUT 600
 #define TEST_FUNCTION do_test ()
 #include "../test-skeleton.c"
