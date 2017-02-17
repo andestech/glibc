@@ -25,7 +25,7 @@
 #endif
 
 #ifndef _ASM
-typedef struct
+typedef struct __jmp_buf_internal_tag
   {
     /* Callee-saved registers: r6 - r14,
      * fp, gp, lp, sp: r28 - r31.  */
