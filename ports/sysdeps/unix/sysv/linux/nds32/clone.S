@@ -63,7 +63,7 @@ ENTRY(__clone)
 5:
 #ifdef PIC
 	/* restore GP register, only in parent's stack  */
-	la	$r15, C_SYMBOL_NAME(__syscall_error@PLT)
+	la	$r15, HIDDEN_JUMPTARGET(__syscall_error@PLT)
 	push	$lp
 	.cfi_adjust_cfa_offset 4
 	.cfi_rel_offset lp, 0
@@ -135,7 +135,6 @@ ENTRY(__clone)
         j       7f
 4:
 	.cfi_undefined lp
-        beqz    $r3, 6b
 	movi	$r0, CLONE_THREAD		! Skip when CLONE_THREAD is set.
 	and	$r0, $r5, $r0
 	bnez	$r0, 7f
@@ -173,9 +172,9 @@ ENTRY(__clone)
 
 	! use $r15 in case _exit is PIC
 #ifdef PIC
-	la	$r15, C_SYMBOL_NAME(_exit@PLT)
+	la	$r15, HIDDEN_JUMPTARGET(_exit@PLT)
 #else /* ! PIC  */
-	la	$r15, C_SYMBOL_NAME(_exit)
+	la	$r15, HIDDEN_JUMPTARGET(_exit)
 #endif /* ! PIC  */
 	jr	$r15
 

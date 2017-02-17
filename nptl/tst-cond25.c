@@ -277,5 +277,5 @@ do_test (int argc, char **argv)
   return do_test_wait (timed_waiter);
 }
 
-#define TIMEOUT 5
+#define TIMEOUT 100
 #include "../test-skeleton.c"
