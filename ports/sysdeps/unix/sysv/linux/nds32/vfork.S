@@ -67,8 +67,8 @@ ENTRY (__vfork)
 	add	$gp,	$gp,	$r15
 
 	! r15=C_SYMBOL_NAME(__syscall_error)@PLT
-	sethi	$r15, 	hi20(C_SYMBOL_NAME(__syscall_error)@PLT)
-	ori	$r15,	$r15, lo12(C_SYMBOL_NAME(__syscall_error)@PLT)
+	sethi	$r15, 	hi20(HIDDEN_JUMPTARGET(__syscall_error)@PLT)
+	ori	$r15,	$r15, lo12(HIDDEN_JUMPTARGET(__syscall_error)@PLT)
 	add	$r15, 	$r15, 	$gp
 	
 	! jump to SYSCALL_ERROR
@@ -99,8 +99,8 @@ ENTRY (__vfork)
 	add     $gp,    $gp,    $r15
 
 	! r15=C_SYMBOL_NAME(__syscall_error)@PLT
-	sethi	$r15,	hi20(C_SYMBOL_NAME(__syscall_error)@PLT)
-	ori     $r15,	$r15, lo12(C_SYMBOL_NAME(__syscall_error)@PLT)
+	sethi	$r15,	hi20(HIDDEN_JUMPTARGET(__syscall_error)@PLT)
+	ori     $r15,	$r15, lo12(HIDDEN_JUMPTARGET(__syscall_error)@PLT)
 	add     $r15,	$r15, 	$gp
 
 	! jump to SYSCALL_ERROR

@@ -1,8 +1,19 @@
 #ifndef _LINUX_NDS32_SYSDEP_H
 #define _LINUX_NDS32_SYSDEP_H 1
 
-#include <sysdeps/unix/nds32/sysdep.h>
+#include <sysdeps/unix/sysdep.h>
+#include <sysdeps/nds32/sysdep.h>
+
+/* Defines RTLD_PRIVATE_ERRNO and USE_DL_SYSINFO.  */
+#include <dl-sysdep.h>
+
 #include <tls.h>
+
+/* In order to get __set_errno() definition in INLINE_SYSCALL.  */
+#ifndef __ASSEMBLER__
+#include <errno.h>
+#endif
+
 
 #define        LIB_SYSCALL    __NR_syscall
 
@@ -18,54 +29,11 @@
 /* Child's $SP for clone syscall will be $r1, 
  * so the pushed $r7, $r8 will not be in cloned child's stack.
  */
-#ifdef NDS_ABI_V1
-#define __do_syscall(syscall_name)		\
-  pushm	$r7, $r8;				\
-  .cfi_adjust_cfa_offset 8;			\
-  .cfi_rel_offset r7, 0;			\
-  .cfi_rel_offset r8, 4;			\
-  li	$r7, SYS_ify(syscall_name);  	\
-  ori	$r7, $r7, lo12(SYS_ify(syscall_name)); 	\
-  syscall	LIB_SYSCALL;			\
-  li  $r0, SYS_ify(clone);       	\
-  bne	$r0, $r7, 1f;				\
-  beqz	$r5, 2f;				\
-1:						\
-  popm	$r7, $r8;				\
-  .cfi_adjust_cfa_offset -8;			\
-  .cfi_restore r8;				\
-  .cfi_restore r7;				\
-2:
-#else
 #define __do_syscall(syscall_name)		\
   syscall	SYS_ify(syscall_name);
-#endif
 
 /* We negate the return value because Linux will return a negated errno. */
 #ifdef PIC
-#ifdef __NDS32_N1213_43U1H__
-#define PSEUDO(name, syscall_name, args)	\
-  .pic;										\
-  .align 2;					\
-  1:	ret;	\
-  99:	addi	$r2,	$lp,	0;	\
-	jal	1b;	\
-	sethi	$r1,	hi20(_GLOBAL_OFFSET_TABLE_);	\
-	ori	$r1,	$r1,	lo12(_GLOBAL_OFFSET_TABLE_+4);	\
-	add	$r1,	$lp,	$r1;	\
-	addi	$lp,	$r2,	0;	\
-	sethi $r15, hi20(SYSCALL_ERROR@PLT);	\
-	ori	$r15,	$r15, lo12(SYSCALL_ERROR@PLT);	\
-	add	$r15, $r15, $r1;	\
-	jr		$r15;	\
-	nop;                                   	\
-	ENTRY(name);                          	\
-	__do_syscall(syscall_name);            	\
-	bgez $r0, 2f;				\
-	sltsi	$r1, $r0, -4096;		\
-	beqz	$r1, 99b;			\
-  2:
-#else
 #define PSEUDO(name, syscall_name, args)	\
   .pic;						\
   .align 2;					\
@@ -95,7 +63,6 @@
 	sltsi	$r1, $r0, -4096;		\
 	beqz	$r1, 99b;			\
   2:
-#endif
 #else
 #define PSEUDO(name, syscall_name, args)	\
   .align 2;					\
@@ -129,52 +96,50 @@
 
 #define ret_NOERRNO ret
 
-#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
 # define STACK_PUSH(count) addi $sp, $sp, count;		\
 			   .cfi_adjust_cfa_offset  -count
 # define STACK_POP(count) addi $sp, $sp, count;		\
 			  .cfi_adjust_cfa_offset  -count
-#else
-# define STACK_PUSH(count) addi $sp, $sp, -24+(count);	\
-			   .cfi_adjust_cfa_offset  24-(count)
-# define STACK_POP(count) addi $sp, $sp, 24+(count);	\
-			   .cfi_adjust_cfa_offset  -24+(count)
-#endif
 
 #if NOT_IN_libc
-#define SYSCALL_ERROR __local_syscall_error
-# ifdef PIC
-#  ifdef __NDS32_N1213_43U1H__
-#define SYSCALL_ERROR_HANDLER				\
+# define SYSCALL_ERROR __local_syscall_error
+# if RTLD_PRIVATE_ERRNO
+#  ifdef PIC
+#  define SYSCALL_ERROR_HANDLER				\
 __local_syscall_error:					\
-	cfi_startproc;					\
-	pushm	$gp, $lp;				\
-	.cfi_adjust_cfa_offset 8;			\
-	.cfi_rel_offset gp, 0;				\
-	.cfi_rel_offset lp, 4;				\
-	jal	1f;					\
-	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_);	\
-	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+4);	\
-	add	$gp,	$gp,	$lp;	\
-	neg	$r0, $r0;	\
-	push	$r0;					\
+	cfi_startproc;                                  \
+	push	$gp;					\
 	.cfi_adjust_cfa_offset 4;			\
-	STACK_PUSH(-4); \
-	bal	C_SYMBOL_NAME(__errno_location@PLT);	\
-	STACK_POP(4); \
-	pop	$r1;			\
+	.cfi_rel_offset gp, 0;				\
+	mfusr  	$r15, 	$PC;				\
+	sethi	$gp,	hi20(_GLOBAL_OFFSET_TABLE_+4);	\
+	ori	$gp,	$gp,	lo12(_GLOBAL_OFFSET_TABLE_+8);	\
+	add	$gp,	$gp,	$r15;			\
+	sethi   $r1,	hi20(rtld_errno@GOTOFF);	\
+	ori	$r1,	$r1,	lo12(rtld_errno@GOTOFF);\
+	neg	$r0, 	$r0;				\
+	sw 	$r0,	[$r1+$gp];			\
+	li	$r0, 	-1;				\
+	pop	$gp;					\
 	.cfi_adjust_cfa_offset -4;			\
-	swi	$r1, [$r0];				\
-	li		$r0, -1;				\
-	popm	$gp, $lp;				\
-	.cfi_adjust_cfa_offset -8;			\
-	.cfi_restore lp;					\
-	.cfi_restore gp;					\
-1: \
-   ret;							\
+	.cfi_restore gp;				\
+	ret;						\
 	cfi_endproc;
 #  else
-#define SYSCALL_ERROR_HANDLER				\
+#  define SYSCALL_ERROR_HANDLER				\
+__local_syscall_error:					\
+	cfi_startproc;                                  \
+	sethi   $r1,	hi20(rtld_errno);		\
+	ori	$r1,	$r1,	lo12(rtld_errno);	\
+	neg	$r0, 	$r0;				\
+	sw 	$r0,	[$r1];				\
+	li		$r0, -1;			\
+	ret;						\
+	cfi_endproc;
+#  endif
+# else
+#  ifdef PIC
+#  define SYSCALL_ERROR_HANDLER				\
 __local_syscall_error:					\
 	cfi_startproc;                                  \
 	pushm	$gp, $lp;				\
@@ -199,12 +164,10 @@ __local_syscall_error:					\
 	.cfi_adjust_cfa_offset -8;			\
 	.cfi_restore lp;				\
 	.cfi_restore gp;				\
-1: \
-   ret;							\
+	ret;							\
 	cfi_endproc;
-#  endif
-# else
-#define SYSCALL_ERROR_HANDLER	\
+#  else
+#  define SYSCALL_ERROR_HANDLER	\
 __local_syscall_error:					\
 	cfi_startproc;					\
 	push	$lp;					\
@@ -225,48 +188,22 @@ __local_syscall_error:					\
 	.cfi_restore lp;					\
 	ret;						\
 	cfi_endproc;
+#  endif
 # endif
-
 #undef PUSH_STACK
 #undef POP_STACK
-/* arm
-#define SYSCALL_ERROR_HANDLER				\
-__local_syscall_error:					\
-	str	lr, [sp, #-4]				\
-	str	r0, [sp, #-4]				\
-	bl	PLTJMP(C_SYMBOL_NAME(__errno_location))	\
-	ldr	r1, [sp], #4				\
-	rsb	r1, r1, #0				\
-	str	r1, [r0]				\
-	mvn	r0, #0					\
-	ldr	pc, [sp], #4
-*/
+
 #else
 #define SYSCALL_ERROR_HANDLER	/* Nothing here; code in sysdep.S is used. */
-#define SYSCALL_ERROR __syscall_error
+#define SYSCALL_ERROR HIDDEN_JUMPTARGET(__syscall_error)
 #endif
 
 #else /* ! __ASSEMBLER__  */
-
-/*
-#define __issue_syscall(syscall_name)			\
-	push	r7					\
-	sethi r7, hi20(SYS_ify(syscall_name));		\
-	ori   r7, r7, lo12(SYS_ify(syscall_name));	\
-	syscall       LIB_SYSCALL;			\
-	pop	r7
-*/
-
 #define X(x) #x
 #define Y(x) X(x)
 
 #define __issue_syscall(syscall_name)                   \
 "       syscall  "  Y(syscall_name) ";                    \n"
-
-#ifndef __set_errno
-#include <errno.h>
-// # define __set_errno(Val) errno = (Val)
-#endif
 
 #undef INLINE_SYSCALL
 #define INLINE_SYSCALL(name, nr, args...)                        \

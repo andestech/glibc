@@ -1,4 +1,5 @@
-/* Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+/* Copyright (C) 2011-2013 Free Software Foundation, Inc.
+
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -12,15 +13,21 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library.  If not, see
+   <http://www.gnu.org/licenses/>.  */
 
-#include <sysdeps/unix/sysdep.h>
-#include <sysdeps/nds32/sysdep.h>
+#include <sysdep.h>
+#include <errno.h>
 
-#ifdef __ASSEMBLER__
+long __syscall_error (long err);
+hidden_proto (__syscall_error)
 
-#define MOVE(x,y) ori y, x, 0
-
-#endif /* __ASSEMBLER__  */
+/* This routine is jumped to by all the syscall handlers, to stash
+   an error number into errno.  */
+long
+__syscall_error (long err)
+{
+  __set_errno (- err);
+  return -1;
+}
+hidden_def (__syscall_error)
