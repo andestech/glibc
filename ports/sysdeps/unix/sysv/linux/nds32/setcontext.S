@@ -10,6 +10,11 @@ ENTRY(__setcontext)
 #ifdef __NDS32_ABI_2FP_PLUS__
 	addi	$r0,  $r4, UCONTEXT_FDREGS
 
+        fmfcfg  $r20    /* Keep $fpcfg in $r20.  */
+        slli    $r20, $r20, #28
+        srli    $r20, $r20, #30 /* Set $r20 as $fpcfg.freg.  */
+
+
 	/* Case switch for $r20 as $fpcfg.freg.  */
 	beqz    $r20, .LCFG0         /* Branch if $fpcfg.freg = 0b00.  */
 	xori    $r15, $r20, #0b10
