@@ -512,13 +512,6 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 #define ELF_MACHINE_JMP_SLOT    R_NDS32_JMP_SLOT
 #endif
 
-#if defined(__NDS32_ABI_2__) || defined(__NDS32_ABI_2FP_PLUS__)
-# define STACK_PUSH
-# define STACK_POP
-#else
-# define STACK_PUSH	"addi $sp, $sp,	-24"
-# define STACK_POP	"addi $sp, $sp,	24"
-#endif
 
 
 /* Mask identifying addresses reserved for the user program,
@@ -528,120 +521,54 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 /* Initial entry point code for the dynamic linker.
    The C function `_dl_start' is the real entry point;
    its return value is the user program's entry point.  */
-#ifdef __NDS32_N1213_43U1H__
-#define RTLD_START asm ("\
-	.text\n\
-	.globl __start\n\
-	.globl _start\n\
-	.globl _dl_start_user\n\
-	.align	4\n\
-1:\n\
-	ret\n\
-__start:\n\
-_start:\n\
-	! we are PIC code, so get global offset table\n\
-	jal	1b\n\
-	sethi	$gp, HI20(_GLOBAL_OFFSET_TABLE_)\n\
-	ori	$gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_+4)\n\
-	add	$gp, $lp, $gp\n\
-\n\
-	! at start time, all the args are on the stack\n\
-	addi	$r0,	$sp,	0\n\
-   ! adjust stack\n\
-   "STACK_PUSH"\n\
-	bal	_dl_start@PLT\n\
-	! save user entry point in r6 which is callee saved\n\
-	addi	$r6,	$r0,	0\n\
-   ! adjust sp and reload registers\n\
-   "STACK_POP"\n\
-\n\
-_dl_start_user:\n\
-	! See if we were run as a command with the executable file\n\
-	! name as an extra leading argument.\n\
-	! skip these arguments\n\
-	l.w	$r2,	_dl_skip_args@GOTOFF	! args to skip\n\
-	lwi	$r0,	[$sp+0]	! original argc\n\
-	slli	$r1,	$r2,	2	! offset for new sp\n\
-	add	$sp,	$sp,	$r1	! adjust sp to skip args\n\
-	sub	$r0,	$r0,	$r2	! set new argc\n\
-	swi	$r0,	[$sp+0]	! save new argc\n\
-\n\
-!"RTLD_START_SPECIAL_INIT"\n\
-	! prepare args to call _dl_init\n\
-	l.w	$r0,	_rtld_local@GOTOFF\n\
-	lwi	$r1,	[$sp+0]	! argc\n\
-	addi	$r2,	$sp,	4	! argv\n\
-	slli	$r3,	$r1,	2	! envp = sp + argc * 4 + 8\n\
-	addi	$r3,	$r3,	8\n\
-	add	$r3,	$r3,	$sp	! envp\n\
-	!pushm	$r0,	$r5,	$sp	! push vars\n\
-	"STACK_PUSH"\n\
-	bal	_dl_init_internal@PLT\n\
-	"STACK_POP"\n\
-\n\
-	! load address of _dl_fini finalizer function\n\
-	la		$r5, _dl_fini@GOTOFF\n\
-	! jump to the user_s entry point\n\
-   addi    $r15,   $r6, 0 \n\
-	jr	$r15\n\
-	.previous\n\
+#define RTLD_START asm ("						\
+	.text								\n\
+	.globl __start							\n\
+	.globl _start							\n\
+	.globl _dl_start_user						\n\
+	.align	4							\n\
+__start:								\n\
+_start:									\n\
+	! we are PIC code, so get global offset table			\n\
+	mfusr $r15, $PC 						\n\
+	sethi	$gp, HI20(_GLOBAL_OFFSET_TABLE_ + 4)			\n\
+	ori	$gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_ + 8)		\n\
+	add	$gp, $r15, $gp						\n\
+									\n\
+	! at start time, all the args are on the stack			\n\
+	addi	$r0,	$sp,	0					\n\
+	bal	_dl_start@PLT						\n\
+	! save user entry point in r6 which is callee saved		\n\
+	addi	$r6,	$r0,	0					\n\
+									\n\
+_dl_start_user:								\n\
+	! See if we were run as a command with the executable file	\n\
+	! name as an extra leading argument.				\n\
+	! skip these arguments						\n\
+	l.w	$r2,	_dl_skip_args@GOTOFF	! args to skip		\n\
+	lwi	$r0,	[$sp+0]			! original argc		\n\
+	slli	$r1,	$r2,	2		! offset for new sp	\n\
+	add	$sp,	$sp,	$r1		! adjust sp to skip args\n\
+	sub	$r0,	$r0,	$r2		! set new argc		\n\
+	swi	$r0,	[$sp+0]			! save new argc		\n\
+									\n\
+!"RTLD_START_SPECIAL_INIT"						\n\
+	! prepare args to call _dl_init					\n\
+	l.w	$r0,	_rtld_local@GOTOFF				\n\
+	lwi	$r1,	[$sp+0]			! argc			\n\
+	addi	$r2,	$sp,	4		! argv			\n\
+	slli	$r3,	$r1,	2		! envp = sp+argc * 4 + 8\n\
+	addi	$r3,	$r3,	8					\n\
+	add	$r3,	$r3,	$sp		! envp			\n\
+	!pushm	$r0,	$r5,	$sp		! push vars		\n\
+	bal	_dl_init_internal@PLT					\n\
+									\n\
+	! load address of _dl_fini finalizer function			\n\
+	la		$r5, _dl_fini@GOTOFF				\n\
+	! jump to the user_s entry point				\n\
+	jr	$r6							\n\
+	.previous							\n\
 ");
-#else
-#define RTLD_START asm ("\
-	.text\n\
-	.globl __start\n\
-	.globl _start\n\
-	.globl _dl_start_user\n\
-	.align	4\n\
-__start:\n\
-_start:\n\
-	! we are PIC code, so get global offset table\n\
-	mfusr $r15, $PC \n\
-	sethi	$gp, HI20(_GLOBAL_OFFSET_TABLE_ + 4)\n\
-	ori	$gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_ + 8)\n\
-	add	$gp, $r15, $gp\n\
-\n\
-	! at start time, all the args are on the stack\n\
-	addi	$r0,	$sp,	0\n\
-   ! adjust stack\n\
-   "STACK_PUSH"\n\
-	bal	_dl_start@PLT\n\
-	! save user entry point in r6 which is callee saved\n\
-	addi	$r6,	$r0,	0\n\
-   ! adjust sp and reload registers\n\
-   "STACK_POP"\n\
-\n\
-_dl_start_user:\n\
-	! See if we were run as a command with the executable file\n\
-	! name as an extra leading argument.\n\
-	! skip these arguments\n\
-	l.w	$r2,	_dl_skip_args@GOTOFF	! args to skip\n\
-	lwi	$r0,	[$sp+0]	! original argc\n\
-	slli	$r1,	$r2,	2	! offset for new sp\n\
-	add	$sp,	$sp,	$r1	! adjust sp to skip args\n\
-	sub	$r0,	$r0,	$r2	! set new argc\n\
-	swi	$r0,	[$sp+0]	! save new argc\n\
-\n\
-!"RTLD_START_SPECIAL_INIT"\n\
-	! prepare args to call _dl_init\n\
-	l.w	$r0,	_rtld_local@GOTOFF\n\
-	lwi	$r1,	[$sp+0]	! argc\n\
-	addi	$r2,	$sp,	4	! argv\n\
-	slli	$r3,	$r1,	2	! envp = sp + argc * 4 + 8\n\
-	addi	$r3,	$r3,	8\n\
-	add	$r3,	$r3,	$sp	! envp\n\
-	!pushm	$r0,	$r5,	$sp	! push vars\n\
-	"STACK_PUSH"\n\
-	bal	_dl_init_internal@PLT\n\
-	"STACK_POP"\n\
-\n\
-	! load address of _dl_fini finalizer function\n\
-	la		$r5, _dl_fini@GOTOFF\n\
-	! jump to the user_s entry point\n\
-	jr	$r6\n\
-	.previous\n\
-");
-#endif
 
 #ifndef RTLD_START_SPECIAL_INIT
 #define RTLD_START_SPECIAL_INIT /* nothing */
