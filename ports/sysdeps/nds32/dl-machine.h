@@ -513,7 +513,6 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 #endif
 
 
-
 /* Mask identifying addresses reserved for the user program,
    where the dynamic linker should not map anything.  */
 #define ELF_MACHINE_USER_ADDRESS_MASK	0xf8000000UL
@@ -530,7 +529,7 @@ elf_machine_runtime_setup (struct link_map *l, int lazy, int profile)
 __start:								\n\
 _start:									\n\
 	! we are PIC code, so get global offset table			\n\
-	mfusr $r15, $PC 						\n\
+	mfusr 	$r15, $PC 						\n\
 	sethi	$gp, HI20(_GLOBAL_OFFSET_TABLE_ + 4)			\n\
 	ori	$gp, $gp, LO12(_GLOBAL_OFFSET_TABLE_ + 8)		\n\
 	add	$gp, $r15, $gp						\n\
@@ -546,27 +545,53 @@ _dl_start_user:								\n\
 	! name as an extra leading argument.				\n\
 	! skip these arguments						\n\
 	l.w	$r2,	_dl_skip_args@GOTOFF	! args to skip		\n\
-	lwi	$r0,	[$sp+0]			! original argc		\n\
-	slli	$r1,	$r2,	2		! offset for new sp	\n\
-	add	$sp,	$sp,	$r1		! adjust sp to skip args\n\
-	sub	$r0,	$r0,	$r2		! set new argc		\n\
-	swi	$r0,	[$sp+0]			! save new argc		\n\
-									\n\
+	bnez	$r2,	2f						\n\
 !"RTLD_START_SPECIAL_INIT"						\n\
 	! prepare args to call _dl_init					\n\
+	addi	$r2,	$sp,	4		! argv			\n\
+1:									\n\
 	l.w	$r0,	_rtld_local@GOTOFF				\n\
 	lwi	$r1,	[$sp+0]			! argc			\n\
-	addi	$r2,	$sp,	4		! argv			\n\
-	slli	$r3,	$r1,	2		! envp = sp+argc * 4 + 8\n\
+	slli	$r3,	$r1,	2		! envp =sp +argc * 4 + 8\n\
 	addi	$r3,	$r3,	8					\n\
 	add	$r3,	$r3,	$sp		! envp			\n\
-	!pushm	$r0,	$r5,	$sp		! push vars		\n\
-	bal	_dl_init_internal@PLT					\n\
+	bal	_dl_init@PLT						\n\
 									\n\
 	! load address of _dl_fini finalizer function			\n\
 	la		$r5, _dl_fini@GOTOFF				\n\
 	! jump to the user_s entry point				\n\
 	jr	$r6							\n\
+2:									\n\
+	lwi	$r0,	[$sp+0]			! original argc		\n\
+	slli	$r1,	$r2,	2		! offset for new sp	\n\
+	add	$sp,	$sp,	$r1		! adjust sp to skip args\n\
+	sub	$r0,	$r0,	$r2		! set new argc		\n\
+	swi	$r0,	[$sp+0]			! save new argc		\n\
+	andi	$r0,	$sp,	7					\n\
+	beqz	$r0,	1b						\n\
+									\n\
+	! Make stack 8-byte aligned					\n\
+	bitci	$sp,	$sp,	7					\n\
+	move	$r2,	$sp						\n\
+3:	! argv								\n\
+	lwi	$r0,	[$r2+4]						\n\
+	smw.bim $r0,[$r2],$r0,#0					\n\
+	bnez	$r0,	3b						\n\
+									\n\
+3:	! envp								\n\
+	lwi	$r0,	[$r2+4]						\n\
+	smw.bim $r0,[$r2],$r0,#0					\n\
+	bnez	$r0,	3b						\n\
+									\n\
+3:	! auxv								\n\
+	lmw.ai	$r0,[$r2],$r1,#0					\n\
+	smw.bim	$r0,[$r2],$r1,#0					\n\
+	bnez	$r0,	3b						\n\
+									\n\
+	!update _dl_argv						\n\
+	addi	$r2,	$sp,	4					\n\
+	s.w	$r2,	_dl_argv@GOTOFF		! args to skip		\n\
+	j	1b							\n\
 	.previous							\n\
 ");
 
