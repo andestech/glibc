@@ -1,11 +1,14 @@
 libc.so: __signbit
 libc.so: calloc
 libc.so: free
-libc.so: fscanf
 libc.so: malloc
 libc.so: memalign
 libc.so: realloc
+libc.so: scalbnf
+libc.so: scalbn
 libm.so: __signbit
 libm.so: __signbitf
 libm.so: matherr
+libm.so: scalbnf
+libm.so: scalbn
 libpthread.so: __errno_location
