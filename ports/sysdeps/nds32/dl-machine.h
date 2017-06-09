@@ -68,6 +68,9 @@ typedef enum reg_index
 REG_CPU_VER,
 REG_MMU_CFG,
 REG_MSC_CFG,
+REG_MSC_CFG2,
+REG_DCM_CFG,
+REG_ICM_CFG,
 REG_FUCOP_EXIST,
 REG_FPCFG,
 REG_LAST                // this is the last one
@@ -85,6 +88,9 @@ static REG_INFO reg_info[] = {
   { "/proc/cpu/cpu_ver", 0, 0 },
   { "/proc/cpu/mmu_cfg", 0, 0 },
   { "/proc/cpu/msc_cfg", 0, 0 },
+  { "/proc/cpu/msc_cfg2", 0, 0 },
+  { "/proc/cpu/dcm_cfg", 0, 0 },
+  { "/proc/cpu/icm_cfg", 0, 0 },
   { "/proc/cpu/fucop_exist", 0, 0 },
   /* Note: OS don't have this node !!
      Use the struct to keep value only */
@@ -270,6 +276,10 @@ reg_read(unsigned int index)
     // MSC_CFG
     reg_num = REG_MSC_CFG;
     break;
+  case 33:
+    // MSC_CFG2
+    reg_num = REG_MSC_CFG2;
+    break;
 
   case 40:
     // FUCOP_EXIST
@@ -339,11 +349,12 @@ reg_read(unsigned int index)
 }
 
 /* Return nonzero iff ELF header is compatible with the running host.  */
+#define BUF_SIZE 2
 static inline int __attribute__ ((unused))
 elf_machine_matches_host(const Elf32_Ehdr *ehdr)
 {
   int fd;
-  char buf[2];
+  char buf[BUF_SIZE];
   int len;
 
   /* check ABI first */
@@ -365,7 +376,7 @@ elf_machine_matches_host(const Elf32_Ehdr *ehdr)
   if (fd != -1)
     {
       // file open OK, check contents
-      len = __libc_read (fd, buf, 8000);
+      len = __libc_read (fd, buf, BUF_SIZE);
       __close (fd);
       buf[len] = 0;
       if (strchr (buf, '0'))
