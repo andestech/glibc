@@ -269,7 +269,6 @@ extern int __lll_robust_timedlock_wait (int *futex, const struct timespec *,
        int __oldval = atomic_exchange_rel (__futex, 0);		\
        if (__builtin_expect (__oldval > 1, 0))			\
 	 lll_futex_wake (__futex, 1, private);			\
-       lll_futex_wake (__futex, 1, private);			\
     })
 #define lll_unlock(futex, private) __lll_unlock(&(futex), private)
 
@@ -280,7 +279,6 @@ extern int __lll_robust_timedlock_wait (int *futex, const struct timespec *,
        int __oldval = atomic_exchange_rel (__futex, 0);		\
        if (__builtin_expect (__oldval & FUTEX_WAITERS, 0))	\
 	 lll_futex_wake (__futex, 1, private);			\
-       lll_futex_wake (__futex, 1, private);			\
     })
 #define lll_robust_unlock(futex, private) \
   __lll_robust_unlock(&(futex), private)
