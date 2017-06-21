@@ -38,7 +38,7 @@
 __BEGIN_DECLS
 
 /* Segment low boundary address multiple.  */
-#define SHMLBA		0x4000
+#define SHMLBA		(__getpagesize () << 2)
 extern int __getpagesize (void) __THROW __attribute__ ((__const__));
 
 
