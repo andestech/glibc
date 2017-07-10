@@ -75,6 +75,10 @@ END(__setcontext)
 
 weak_alias (__setcontext, setcontext)
 
+        cfi_startproc
+        cfi_undefined (lp)
+        nop16
+        cfi_endproc
 ENTRY (__startcontext)
 	beqz $r6, 1f
         move $r0, $r6
