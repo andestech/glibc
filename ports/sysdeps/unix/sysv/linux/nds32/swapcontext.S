@@ -117,7 +117,6 @@ ENTRY(__swapcontext)
 
         move    $r0, $r5
         addi    $r15, $r5, UCONTEXT_GREGS + 4
-        addi    $r15, $r15, 20
 	lmw.bim	$r1, [$r15], $r14
         addi    $r15, $r15, 4
 	lmw.bim	$r16, [$r15], $r25, #0xf
