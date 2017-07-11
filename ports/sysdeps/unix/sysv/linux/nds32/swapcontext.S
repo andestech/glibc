@@ -76,13 +76,13 @@ ENTRY(__swapcontext)
 	srli    $r20, $r20, #30 /* Set $r20 as $fpcfg.freg.  */
 
 	/* Case switch for $r20 as $fpcfg.freg.  */
-	beqz    $r20, .LCFG0         /* Branch if $fpcfg.freg = 0b00.  */
+	beqz    $r20, .LCFG4         /* Branch if $fpcfg.freg = 0b00.  */
 	xori    $r15, $r20, #0b10
-	beqz    $r15, .LCFG2         /* Branch if $fpcfg.freg = 0b10.  */
+	beqz    $r15, .LCFG6         /* Branch if $fpcfg.freg = 0b10.  */
 	srli    $r20, $r20, #0b01
-	beqz    $r20, .LCFG1         /* Branch if $fpcfg.freg = 0b01.  */
+	beqz    $r20, .LCFG5         /* Branch if $fpcfg.freg = 0b01.  */
 	/* Fall-through if $fpcfg.freg = 0b11.  */
-.LCFG3:
+.LCFG7:
 	fldi $fd31, [$r0 + 248]
 	fldi $fd30, [$r0 + 240]
 	fldi $fd29, [$r0 + 232]
@@ -91,16 +91,16 @@ ENTRY(__swapcontext)
 	fldi $fd26, [$r0 + 208]
 	fldi $fd25, [$r0 + 200]
 	fldi $fd24, [$r0 + 192]
-.LCFG2:
+.LCFG6:
 	fldi $fd10, [$r0 + 80]
 	fldi $fd9, [$r0 + 72]
 	fldi $fd8, [$r0 + 64]
-.LCFG1:
+.LCFG5:
 	fldi $fd7, [$r0 + 56]
 	fldi $fd6, [$r0 + 48]
 	fldi $fd5, [$r0 + 40]
 	fldi $fd4, [$r0 + 32]
-.LCFG0:
+.LCFG4:
 	fldi $fd3, [$r0 + 24]
 	/*save fpcsr*/
 	lwi $r1, [$r0 + 0x100]
