@@ -105,7 +105,7 @@ do_test (void)
     }
 
   do
-    sleep (1);
+    sleep (3);
   while (access (pidfilename, R_OK) != 0);
 
   xpthread_cancel (th);
@@ -205,5 +205,5 @@ cmdline_process (int c)
 #define CMDLINE_PROCESS cmdline_process
 #define CLEANUP_HANDLER do_cleanup
 #define PREPARE do_prepare
-#define TIMEOUT 5
+#define TIMEOUT 10
 #include <support/test-driver.c>
