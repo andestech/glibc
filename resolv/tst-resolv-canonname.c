@@ -309,5 +309,5 @@ do_test (void)
   TEST_VERIFY (dlclose (nss_dns_handle) == 0);
   return 0;
 }
-
+#define TIMEOUT 10*3600
 #include <support/test-driver.c>

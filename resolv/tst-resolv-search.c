@@ -340,5 +340,5 @@ do_test (void)
     do_test_all (unconnectable_server);
   return 0;
 }
-
+#define TIMEOUT 10*3600
 #include <support/test-driver.c>

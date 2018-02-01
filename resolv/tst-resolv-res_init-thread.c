@@ -15,6 +15,6 @@
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
-
+#define TIMEOUT 10*3600
 #define TEST_THREAD 1
 #include "tst-resolv-res_init-skeleton.c"

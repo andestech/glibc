@@ -85,5 +85,5 @@ do_test (void)
     xpthread_join (threads[i]);
   return 0;
 }
-
+#define TIMEOUT 10*3600
 #include <support/test-driver.c>

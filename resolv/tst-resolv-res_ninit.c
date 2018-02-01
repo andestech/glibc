@@ -70,6 +70,5 @@ do_test (void)
   TEST_VERIFY (res_init () == 0);
   return 0;
 }
-
-#define TIMEOUT 50
+#define TIMEOUT 10*3600
 #include <support/test-driver.c>

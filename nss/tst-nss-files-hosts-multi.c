@@ -326,6 +326,6 @@ do_test (void)
   support_chroot_free (chroot_env);
   return 0;
 }
-
+#define TIMEOUT 24*3600
 #define PREPARE prepare
 #include <support/test-driver.c>

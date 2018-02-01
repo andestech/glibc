@@ -528,5 +528,5 @@ do_test (void)
   free_response_data ();
   return 0;
 }
-
+#define TIMEOUT 10*3600
 #include <support/test-driver.c>
