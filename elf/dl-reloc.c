@@ -287,6 +287,9 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
   /* Undo the segment protection changes.  */
   while (__builtin_expect (textrels != NULL, 0))
     {
+#ifdef WBINVAL_BCACHE
+      WBINVAL_BCACHE (textrels->start, textrels->start + textrels->len);
+#endif
       if (__mprotect (textrels->start, textrels->len, textrels->prot) < 0)
 	{
 	  errstring = N_("cannot restore segment prot after reloc");
