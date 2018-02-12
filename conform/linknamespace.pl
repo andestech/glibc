@@ -47,7 +47,7 @@ close (STDSYMS) || die ("close $stdsyms_file: $!\n");
 # * Bug 18442: re_syntax_options wrongly brought in by regcomp and
 # used by re_comp.
 #
-@whitelist = qw(stdin stdout stderr re_syntax_options);
+@whitelist = qw(stdin stdout stderr re_syntax_options scalbn scalbnf);
 foreach my $sym (@whitelist) {
   $stdsyms{$sym} = 1;
 }
