@@ -149,3 +149,4 @@ do_test (void)
 
   return 0;
 }
+#define TIMEOUT 5*3600

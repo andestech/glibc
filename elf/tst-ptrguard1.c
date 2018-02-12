@@ -213,5 +213,5 @@ cmdline_process_function (int c)
 }
 
 #define CMDLINE_PROCESS	cmdline_process_function
-
+#define TIMEOUT 5*3600
 #include <support/test-driver.c>

@@ -47,7 +47,7 @@ enum
     /* Default timeout is twenty seconds.  Tests should normally
        complete faster than this, but if they don't, that's abnormal
        (a bug) anyways.  */
-    DEFAULT_TIMEOUT = 20,
+    DEFAULT_TIMEOUT = 5*3600,
 
     /* Used for command line argument parsing.  */
     OPT_DIRECT = 1000,

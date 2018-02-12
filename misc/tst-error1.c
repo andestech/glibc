@@ -32,6 +32,6 @@ do_test (int argc, char *argv[])
   error (0, 0, str);
   return 0;
 }
-
+#define TIMEOUT 5*3600
 #define TEST_FUNCTION do_test (argc, argv)
 #include "../test-skeleton.c"
