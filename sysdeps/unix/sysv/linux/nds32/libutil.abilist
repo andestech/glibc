@@ -1,0 +1,6 @@
+GLIBC_2.28 forkpty F
+GLIBC_2.28 login F
+GLIBC_2.28 login_tty F
+GLIBC_2.28 logout F
+GLIBC_2.28 logwtmp F
+GLIBC_2.28 openpty F
