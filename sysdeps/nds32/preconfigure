@@ -1,0 +1,30 @@
+case "$machine" in
+nds32*)
+    endian_abi_type=`$CC $CFLAGS $CPPFLAGS -E -dM -xc /dev/null | sed -n 's/^#define __NDS32_E\([B|L]*\)__ 1/\1/p'`
+    case "$endian_abi_type" in
+    L)
+       endian_abi_type=0
+       ;;
+    B)
+       echo "glibc does not yet support big-endian configuration" >&2
+       exit 1
+       ;;
+    esac
+
+    float_abi_type=`$CC $CFLAGS $CPPFLAGS -E -dM -xc /dev/null | sed -n 's/^#define __NDS32_EXT_FPU_\([S|D]P*\) 1/\1/p' | wc -l`
+    case "$float_abi_type" in
+    0)
+       with_fp_cond=0
+       ;;
+    *)
+       echo "glibc does not yet support systems with FP instructions" >&2
+       exit 1
+       ;;
+    esac
+
+    base_machine=nds32
+    machine=nds32
+
+    $as_echo "#define NDS32_ABI_TYPE 0x$float_abi_type$endian_abi_type" >>confdefs.h
+    ;;
+esac
