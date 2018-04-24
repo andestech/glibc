@@ -106,6 +106,9 @@
 /* RISC-V floating-point ABI for ld.so.  */
 #undef RISCV_ABI_FLEN
 
+/* NDS32 floating-point ABI for ld.so.  */
+#undef NDS32_ABI_TYPE
+
 /* Linux specific: minimum supported kernel version.  */
 #undef	__LINUX_KERNEL_VERSION
 
