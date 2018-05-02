@@ -63,7 +63,9 @@ die "unknown standard \"$standard\"" if ($CFLAGS{$standard} eq "");
 	     'do', 'double', 'else', 'enum', 'extern', 'float', 'for', 'goto',
 	     'if', 'int', 'long', 'register', 'return',
 	     'short', 'signed', 'sizeof', 'static', 'struct', 'switch',
-	     'typedef', 'union', 'unsigned', 'void', 'volatile', 'while');
+	     'typedef', 'union', 'unsigned', 'void', 'volatile', 'while',
+	     'NDS32_EXT_PERF', 'NDS32_EXT_PERF2', 'NDS32_EXT_STRING',
+	     'NDS32_BASELINE_V3','NDS32_EL','NDS32_ABI_2','NDS32_EXT_EX9','NDS32_EXT_IFC');
 if ($CFLAGS{$standard} =~ /-std=(c99|c1x)/) {
   push (@keywords, 'inline', 'restrict');
 }
