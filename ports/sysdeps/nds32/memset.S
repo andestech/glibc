@@ -33,31 +33,84 @@
 !        ret: $r0 - pointer to the memory area dst.
 !==========================================================
 ENTRY(memset)
-	move	$r5, $r0			    ! Return value
-	beqz    $r2, .Lend_memset       ! Exit when len = 0
-	srli	$r3, $r2, 2		        ! r3 is how many words to copy
-	andi	$r2, $r2, 3		        ! How many bytes are less than a word
-	beqz	$r3, .Lbyte_set	        ! When n is less than a word
+	move	$r3, $r0			! Set $r3 as the dest. Keep value of $r0.
+								! $r0 <- dst, $r1 <- value, $r2 <- size
+	slti	$ta, $r2, 4			! $ta  <- len<4?
+	bnez	$ta, .Lbyte_mode	! if len<4, go to byte-mode
+	andi	$r5, $r3, 0x3
 
-	! set r1 from ??????ab to abababab
-	andi    $r1, $r1, 0x00ff		! r1 = 000000ab
-	slli    $r4, $r1, 8             ! r4 = 0000ab00
-	or      $r1, $r1, $r4           ! r1 = 0000abab
-	slli    $r4, $r1, 16            ! r4 = abab0000
-	or      $r1, $r1, $r4           ! r1 = abababab
+	! handle unligned leading bytes if any
+	beqz	$r5, .Lword_prepare	! if word-aligned, go to word-mode
+	subri	$r5, $r5, #4		! size to next word-aligned address
+	sub		$r2, $r2, $r5		! $r2 <- bytes left
+	add		$r5, $r5, $r0		! $r5 <- upper bound
 
-.Lword_set:
-	addi	$r3, $r3, -1		    ! How many words left to copy
-	smw.bim $r1, [$r5], $r1		    ! Copy the word to det
-	bnez    $r3, .Lword_set		    ! Still words to set, continue looping
-	beqz	$r2, .Lend_memset		! No left byte to set
+	.align	2
+1:
+	! byte-mode set loop
+	sbi.bi	$r1, [$r3], 1		! $r1  -> *dst++
+	bne		$r3, $r5, 1b		! if reach upper bound, go to word-mode
 
-.Lbyte_set:				            ! Less than 4 bytes left to set
-	addi	$r2, $r2, -1		    ! Decrease len by 1
-	sbi.p	$r1, [$r5], 1		    ! Set data of the next byte to r1
-	bnez	$r2, .Lbyte_set		    ! Still bytes left to set
+    .align  2
+.Lword_prepare:
+	! prepare word
+	andi    $r1, $r1, 0xff		! $r1  <- 0x000000ab
+	slli    $r4, $r1, 8		! $r4  <- 0x0000ab00
+	or      $r1, $r1, $r4		! $r1  <- 0x0000abab
+	slli    $r4, $r1, 16		! $r4  <- 0xabab0000
+	or      $r1, $r1, $r4		! $r1  <- 0xabababab
 
-.Lend_memset:
+	! assume cache-line size is 32 bytes
+	srli	$r5, $r2, 5			! $r5 <- n cache-lines to set
+	beqz	$r5, .Lword_mode	! smaller than cache-line bytes
+	slli	$r5, $r5, 5			! $r5 <- n cache-line bytes
+	add		$r5, $r5, $r3		! $r5 <- upper bound
+	andi	$r2, $r2, 0x1f		! $r2 <- bytes left
+
+	! cache-line-mode set loop
+
+	move $r16,$r1
+	move $r17,$r1
+	move $r18,$r1
+	move $r19,$r1
+	move $r20,$r1
+	move $r21,$r1
+	move $r22,$r1
+	move $r23,$r1
+
+	.align	2
+4:
+	smw.bim	$r16, [$r3], $r23, #0 	!$r3 is dst
+	bne	$r3, $r5, 4b				!Next cache-line
+
+    .align  2
+.Lword_mode:
+	srli	$r5, $r2, 2			! $r5 <- n words to set
+	beqz	$r5, .Lbyte_mode	! smaller than 4 bytes
+	slli	$r5, $r5, 2			! $r5 <- n bytes
+	add		$r5, $r5, $r3		! $r5 <- upper bound
+	andi	$r2, $r2, 0x3		! $r2 <- bytes left
+
+	! word-mode set loop
+	.align	2
+
+2:
+	smw.bim	$r1, [$r3], $r1, #0
+    bne $r3, $r5, 2b            ! Next word.
+
+    .align  2
+.Lbyte_mode:
+	beqz	$r2, .Lend
+	add	$r5, $r3, $r2			! Set $r5 as upper bound.
+
+	.align	2
+3:
+	! byte-mode set loops
+	sbi.bi	$r1, [$r3], #1
+	bne		$r3, $r5, 3b		! Not readch upper bound. Loop.
+
+    .align  2
+.Lend:
 	ret
 
 END(memset)
