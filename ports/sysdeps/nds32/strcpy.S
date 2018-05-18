@@ -52,6 +52,10 @@ ENTRY(strcpy)
 	ret $lp
 
 #else /* not (__NDS32_EXT_STRING__) */
+        sethi   $gp,    hi20(_GLOBAL_OFFSET_TABLE_ - 8)
+        ori     $gp,    $gp,    lo12(_GLOBAL_OFFSET_TABLE_ - 4)
+        add5.pc $gp
+
 	/* If SRC or DEST is unaligned, then copy bytes.  */
 	or	$r2, $r1, $r0
 	andi	$r2, $r2, #3
