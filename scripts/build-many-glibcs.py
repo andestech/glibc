@@ -302,6 +302,14 @@ class Context(object):
                                  'ccopts': '-mabi=32'},
                                 {'variant': 'n64-nan2008-soft',
                                  'ccopts': '-mabi=64'}])
+        self.add_config(arch='nds32le',
+                        os_name='linux-gnu',
+                        gcc_cfg=['--with-nds32-lib=glibc',
+                                 '--with-arch=v3', '--with-cpu=n13',
+                                 '--enable-default-relax=no',
+                                 '--with-nds32-lib=glibc',
+                                 '--disable-libsanitizer',
+                                 '--disable-multilib'])
         self.add_config(arch='nios2',
                         os_name='linux-gnu')
         self.add_config(arch='powerpc',
@@ -1256,6 +1264,7 @@ class Config(object):
                     'm68k': 'm68k',
                     'microblaze': 'microblaze',
                     'mips': 'mips',
+                    'nds32': 'nds32',
                     'nios2': 'nios2',
                     'powerpc': 'powerpc',
                     's390': 's390',
