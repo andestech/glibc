@@ -304,15 +304,9 @@ class Context(object):
                                  'ccopts': '-mabi=64'}])
         self.add_config(arch='nds32le',
                         os_name='linux-gnu',
-                        gcc_cfg=['--with-nds32-lib=glibc', 
-                        '--with-arch=v3', '--with-cpu=n13', 
-                        '--enable-default-relax=no', 
-                        '--with-nds32-lib=glibc',
-                        '--disable-libsanitizer',
-                        '--disable-multilib'],
-                        glibcs=[{'variant': 'nds32le'},
-                                {'arch': 'nds32le',}
-                                 ])
+                        gcc_cfg=['--with-arch=v3', '--with-cpu=n13',
+                                 '--enable-default-relax=no',
+                                 '--disable-multilib'])
         self.add_config(arch='nios2',
                         os_name='linux-gnu')
         self.add_config(arch='powerpc',
@@ -727,7 +721,7 @@ class Context(object):
                             'gcc': 'vcs-mainline',
                             'glibc': 'vcs-mainline',
                             'gmp': '6.1.2',
-                            'linux': 'master',
+                            'linux': '4.17',
                             'mpc': '1.1.0',
                             'mpfr': '4.0.0',
                             'mig': 'vcs-mainline',
@@ -797,7 +791,7 @@ class Context(object):
             return self.git_checkout(component, git_url, git_branch, update)
         elif component == 'gcc':
             if version == 'mainline':
-                git_branch = 'nds32-6.3.0-open'
+                git_branch = 'nds32-8.1.0-upstream'
             else:
                 trans = str.maketrans({'.': '_'})
                 git_branch = 'branches/gcc-%s-branch' % version.translate(trans)
@@ -806,7 +800,7 @@ class Context(object):
         elif component == 'glibc':
             git_url = 'https://github.com/andestech/glibc.git'
             if version == 'mainline':
-                git_branch = 'nds32-glibc-2.27-v0'
+                git_branch = 'nds32-glibc-2.27-v3'
             else:
                 git_branch = 'release/%s/master' % version
             r = self.git_checkout(component, git_url, git_branch, update)
@@ -889,7 +883,7 @@ class Context(object):
         url_map = {'binutils': 'https://ftp.gnu.org/gnu/binutils/binutils-%(version)s.tar.bz2',
                    'gcc': 'https://ftp.gnu.org/gnu/gcc/gcc-%(version)s/gcc-%(version)s.tar.bz2',
                    'gmp': 'https://ftp.gnu.org/gnu/gmp/gmp-%(version)s.tar.xz',
-		   'linux': 'https://github.com/andestech/linux/archive/master.tar.gz',
+                   'linux': 'https://www.kernel.org/pub/linux/kernel/v4.x/linux-%(version)s.tar.xz',
                    'mpc': 'https://ftp.gnu.org/gnu/mpc/mpc-%(version)s.tar.gz',
                    'mpfr': 'https://ftp.gnu.org/gnu/mpfr/mpfr-%(version)s.tar.xz',
                    'mig': 'https://ftp.gnu.org/gnu/mig/mig-%(version)s.tar.bz2',
