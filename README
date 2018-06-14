@@ -29,6 +29,7 @@ The GNU C Library supports these configurations for using Linux kernels:
 	i[4567]86-*-linux-gnu
 	x86_64-*-linux-gnu	Can build either x86_64 or x32
 	ia64-*-linux-gnu
+	nds32le-linux-gnu
 	m68k-*-linux-gnu
 	microblaze*-*-linux-gnu
 	mips-*-linux-gnu

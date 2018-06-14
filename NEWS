@@ -41,6 +41,10 @@ Major new features:
   NI_IDN_ALLOW_UNASSIGNED, NI_IDN_USE_STD3_ASCII_RULES) have been
   deprecated.  They no longer have any effect.
 
+* Support for the Andes nds32 ISA running on Linux has been added. This port
+  requires at least linux-4.17. Only one ABI, andes v3 with little endian, is
+  supported at present.
+
 Deprecated and removed features, and other changes affecting compatibility:
 
 * The nonstandard header files <libio.h> and <_G_config.h> are no longer
