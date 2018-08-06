@@ -106,7 +106,7 @@ endif
 
 # This makes all the auxiliary and test programs.
 
-.PHONY: others tests bench bench-build
+.PHONY: others tests bench bench-func bench-build
 
 # Test programs for the pretty printers.
 tests-printers-programs := $(addprefix $(objpfx),$(tests-printers))
