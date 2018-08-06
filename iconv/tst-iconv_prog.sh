@@ -32,7 +32,7 @@ $codir/iconv/iconv_prog
 '
 ICONV="$test_wrapper_env $run_program_env $ICONV"
 
-TIMEOUTFACTOR=${TIMEOUTFACTOR:-1}
+TIMEOUTFACTOR=${TIMEOUTFACTOR:-30}
 
 # List of known hangs;
 # Gathered by running an exhaustive 2 byte input search against glibc-2.28
@@ -219,12 +219,24 @@ errorarray=(
 "\x00\x00;;UTF-8;INVALID"
 )
 
+# Checkout timeout command has -k option or not
+timeout_check()
+{
+  timeout -k 1 1 sleep 3
+  t_ret=$?
+  if [ "$t_ret" -eq "125" ]; then
+    timeout_option="timeout"
+  else
+    timeout_option="timeout -k 4"
+  fi
+}
+
 # Requires $twobyte input, $c flag, $from, and $to to be set; sets $ret
 execute_test ()
 {
   eval PROG=\"$ICONV\"
   echo -en "$twobyte" \
-    | timeout -k 4 $((3*$TIMEOUTFACTOR)) \
+    | $timeout_option $((3*$TIMEOUTFACTOR)) \
       $PROG $c -f $from -t "$to" &>/dev/null
   ret=$?
 }
@@ -252,6 +264,8 @@ check_hangtest_result ()
     exit 1
   fi
 }
+
+timeout_check
 
 for hangcommand in "${hangarray[@]}"; do
   twobyte="$(echo "$hangcommand" | cut -d";" -f 1)"

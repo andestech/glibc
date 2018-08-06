@@ -5,6 +5,7 @@ riscv*)
     float_abi=`$CC $CFLAGS $CPPFLAGS -E -dM -xc /dev/null | sed -n 's/^#define __riscv_float_abi_\([^ ]*\) .*/\1/p'`
     atomic=`$CC $CFLAGS $CPPFLAGS -E -dM -xc /dev/null | grep '#define __riscv_atomic' | cut -d' ' -f2`
 
+    andes_mtune=$MTUNE
     case "$xlen" in
     64 | 32)
 	;;
@@ -63,5 +64,8 @@ riscv*)
 
     $as_echo "#define RISCV_ABI_XLEN $xlen" >>confdefs.h
     $as_echo "#define RISCV_ABI_FLEN $abi_flen" >>confdefs.h
+    if [ $andes_mtune == "45" ]; then
+	$as_echo "#define ANDES_MTUNE $andes_mtune" >>confdefs.h
+    fi
     ;;
 esac
