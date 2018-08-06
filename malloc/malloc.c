@@ -3159,9 +3159,11 @@ static uintptr_t tcache_key;
 static void
 tcache_key_initialize (void)
 {
+  int saved_errno = errno;
   if (__getrandom (&tcache_key, sizeof(tcache_key), GRND_NONBLOCK)
       != sizeof (tcache_key))
     {
+      errno = saved_errno;
       tcache_key = random_bits ();
 #if __WORDSIZE == 64
       tcache_key = (tcache_key << 32) | random_bits ();

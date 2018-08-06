@@ -32,7 +32,7 @@ $codir/iconv/iconv_prog
 '
 ICONV="$test_wrapper_env $run_program_env $ICONV"
 
-TIMEOUTFACTOR=${TIMEOUTFACTOR:-1}
+TIMEOUTFACTOR=${TIMEOUTFACTOR:-5}
 
 # List of known hangs;
 # Gathered by running an exhaustive 2 byte input search against glibc-2.28
