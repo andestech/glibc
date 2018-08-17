@@ -210,12 +210,12 @@ ENTRY (strcmp)
 #endif
 #endif // __nds_v5
 
+END (strcmp)
+libc_hidden_builtin_def (strcmp)
+
 #if SZREG == 8 && !defined(__nds_v5)
 .section .srodata.cst8,"aM",@progbits,8
 .align 3
 mask:
 .dword 0x7f7f7f7f7f7f7f7f
 #endif
-
-END (strcmp)
-libc_hidden_builtin_def (strcmp)
