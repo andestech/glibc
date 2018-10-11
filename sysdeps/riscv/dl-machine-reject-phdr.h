@@ -256,7 +256,7 @@ riscv_extension_compatible(const char** elf_isa,
 {
   char ch;
   char *prev_pos = NULL;
-  char *curr_pos = NULL;
+  char *curr_pos;
 
   while (**elf_isa != '\0') {
       if (**elf_isa == 'x' || **elf_isa == 'X')
@@ -270,11 +270,10 @@ riscv_extension_compatible(const char** elf_isa,
             return false;
         }
 
-      curr_pos = strcasechr(riscv_extensions, **elf_isa);
+      curr_pos = (char*)strcasechr(riscv_extensions, **elf_isa);
       if (prev_pos && prev_pos > curr_pos)
         {
-          REJECT("Wrong extension order: `%c' later than `%c'\n",
-		 *curr_pos, *prev_pos);
+          REJECT("Wrong extension order\n");
           return false;
         }
       prev_pos = curr_pos;
@@ -437,6 +436,9 @@ parse_riscv_attributes(const char* buf, const char* end)
   struct riscv_version priv;
   int total_check = 0;
 
+  priv.major = 0;
+  priv.minor = 0;
+
   while (buf < end) {
       /* Each attribute is a pair of tag and value. The value can be
          either a null-terminated byte string or an ULEB128 encoded
@@ -469,7 +471,7 @@ parse_riscv_attributes(const char* buf, const char* end)
           continue;
 
         default:
-          REJECT("Unknown RISCV Attribute Tag %u\n", tag);
+          REJECT("Unknown RISCV Attribute Tag %lu\n", tag);
           continue;
         }
 
