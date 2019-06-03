@@ -1,0 +1,9 @@
+DEFAULT			GLIBC_2.30
+
+%if NDS32_ABI_TYPE == 0
+ld=ld-linux-nds32le.so.1
+%elif NDS32_ABI_TYPE == 0x10
+ld=ld-linux-nds32lef.so.1
+%else
+%error cannot determine ABI
+%endif
