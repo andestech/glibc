@@ -34,6 +34,10 @@ Major new features:
   pointer subtraction within the allocated object, where results might
   overflow the ptrdiff_t type.
 
+* Support for the  nds32 ABI 2 running on Linux has been add.  This port
+  requires at least binutils-2.32, gcc-9.0.0, and linux-4.17.  only one
+  ABI, nds32 ABI 2 soft-fp, is supported.
+
 Deprecated and removed features, and other changes affecting compatibility:
 
 * The functions clock_gettime, clock_getres, clock_settime,
