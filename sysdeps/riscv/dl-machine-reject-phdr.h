@@ -342,20 +342,20 @@ static bool
 riscv_base_isa_compatible(const char** elf_isa, const char **host_isa)
 {
   /* The ISA string must begin with one of these four.  */
-  const char* base_isas[RISCV_NUM_BASE_ISA] = { "RV32I", "RV32E", "RV64I",
-                                                "RV128I" };
+  const char* base_isas[RISCV_NUM_BASE_ISA] = { "rv32i", "rv32e", "rv64i",
+                                                "rv128i" };
   int elf_base = -1;
   int host_base = -1;
   int i;
 
   for (i = 0; i < RISCV_NUM_BASE_ISA; i++) {
       size_t len = strlen(base_isas[i]);
-      if (elf_base < 0 && strncmp(*elf_isa, base_isas[i], len))
+      if (elf_base < 0 && !strncmp(*elf_isa, base_isas[i], len))
         {
           elf_base = i;
           *elf_isa += len;
         }
-      if (host_base < 0 && strncmp(*host_isa, base_isas[i], len))
+      if (host_base < 0 && !strncmp(*host_isa, base_isas[i], len))
         {
           host_base = i;
           *host_isa += len;
@@ -422,12 +422,22 @@ static bool riscv_priv_spec_compatible(struct riscv_version *priv)
 }
 
 #define Tag_File               1
-#define Tag_arch               4
-#define Tag_priv_spec          5
-#define Tag_priv_spec_minor    6
-#define Tag_priv_spec_revision 7
-#define Tag_strict_align       8
-#define Tag_stack_align        9
+#define Tag_RISCV_stack_align        4
+#define Tag_RISCV_arch               5
+#define Tag_RISCV_unaligned_access   6
+#define Tag_RISCV_priv_spec          8
+#define Tag_RISCV_priv_spec_minor    10
+#define Tag_RISCV_priv_spec_revision 12
+#define Tag_ict_version              0x8000
+#define Tag_ict_model                0x8001
+
+#define Tag_arch_legacy               4
+#define Tag_priv_spec_legacy          5
+#define Tag_priv_spec_minor_legacy    6
+#define Tag_priv_spec_revision_legacy 7
+#define Tag_strict_align_legacy       8
+#define Tag_stack_align_legacy        9
+
 static int
 parse_riscv_attributes(const char* buf, const char* end)
 {
@@ -445,7 +455,11 @@ parse_riscv_attributes(const char* buf, const char* end)
          integer depending on the tag.  */
       tag = parse_uleb128(&buf, end);
       switch (tag) {
-        case Tag_arch:
+        case Tag_RISCV_stack_align:
+          parse_uleb128(&buf, end);
+          break;
+
+        case Tag_RISCV_arch:
           /* For Tag_arch, parse the arch substring.  */
           isa = parse_ntbs(&buf, end);
           if (!riscv_isa_compatible(isa)){
@@ -454,20 +468,19 @@ parse_riscv_attributes(const char* buf, const char* end)
           total_check++;
           break;
 
-        case Tag_priv_spec:
+        case Tag_RISCV_priv_spec:
           priv.major = parse_uleb128(&buf, end);
           total_check++;
           break;
 
-        case Tag_priv_spec_minor:
+        case Tag_RISCV_priv_spec_minor:
           priv.minor = parse_uleb128(&buf, end);
           total_check++;
           break;
 
         /* Simply ignore other tags.  */
-        case Tag_priv_spec_revision:
-        case Tag_strict_align:
-        case Tag_stack_align:
+        case Tag_RISCV_priv_spec_revision:
+        case Tag_RISCV_unaligned_access:
           continue;
 
         default:
@@ -483,6 +496,74 @@ parse_riscv_attributes(const char* buf, const char* end)
         }
     }
   return ENOEXEC;
+}
+
+static int
+parse_legacy_riscv_attributes(const char* buf, const char* end)
+{
+  unsigned long tag;
+  const char* isa;
+  struct riscv_version priv;
+  int total_check = 0;
+
+  priv.major = 0;
+  priv.minor = 0;
+
+  while (buf < end) {
+      /* Each attribute is a pair of tag and value. The value can be
+         either a null-terminated byte string or an ULEB128 encoded
+         integer depending on the tag.  */
+      tag = parse_uleb128(&buf, end);
+      switch (tag) {
+        case Tag_arch_legacy:
+          /* For Tag_arch, parse the arch substring.  */
+          isa = parse_ntbs(&buf, end);
+          if (!riscv_isa_compatible(isa)){
+            return ENOEXEC;
+          }
+          total_check++;
+          break;
+
+        case Tag_priv_spec_legacy:
+          priv.major = parse_uleb128(&buf, end);
+          total_check++;
+          break;
+
+        case Tag_priv_spec_minor_legacy:
+          priv.minor = parse_uleb128(&buf, end);
+          total_check++;
+          break;
+
+        /* Simply ignore other tags.  */
+        case Tag_priv_spec_revision_legacy:
+        case Tag_strict_align_legacy:
+        case Tag_stack_align_legacy:
+          continue;
+
+        default:
+          REJECT("Unknown RISCV Attribute Tag %lu\n", tag);
+          continue;
+        }
+
+      if (total_check == 3)
+        {
+          if (riscv_priv_spec_compatible(&priv))
+            return 0;
+          break;
+        }
+    }
+  return ENOEXEC;
+}
+
+static bool is_legacy_riscv_attributes(const char* buf, const char* end)
+{            
+  unsigned long tag = parse_uleb128(&buf, end);
+             
+  if (tag == 4 && end - buf >= 2 && !strncmp((const char*) buf, "rv", 2))
+    {
+      return true;
+    }
+  return false;
 }
 
 /* We assume that the subsection started with "riscv", the only subsection we
@@ -513,8 +594,13 @@ parse_riscv_subsection(const char* buf, const char* end)
   sub_end = sub_begin + len;
 
   /* Followed by the actual RISC-V attributes.  */
-  if (parse_riscv_attributes(buf, sub_end))
-    goto out_noexec;
+  if (is_legacy_riscv_attributes(buf, sub_end))
+    {
+      if (parse_legacy_riscv_attributes(buf, sub_end))
+      goto out_noexec;
+    } 
+  else if (parse_riscv_attributes(buf, sub_end))
+      goto out_noexec;
 
   return 0;
 out_noexec:
