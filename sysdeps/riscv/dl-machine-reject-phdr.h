@@ -443,11 +443,6 @@ parse_riscv_attributes(const char* buf, const char* end)
 {
   unsigned long tag;
   const char* isa;
-  struct riscv_version priv;
-  int total_check = 0;
-
-  priv.major = 0;
-  priv.minor = 0;
 
   while (buf < end) {
       /* Each attribute is a pair of tag and value. The value can be
@@ -462,23 +457,14 @@ parse_riscv_attributes(const char* buf, const char* end)
         case Tag_RISCV_arch:
           /* For Tag_arch, parse the arch substring.  */
           isa = parse_ntbs(&buf, end);
-          if (!riscv_isa_compatible(isa)){
-            return ENOEXEC;
+          if (riscv_isa_compatible(isa)){
+            return 0;
           }
-          total_check++;
-          break;
-
-        case Tag_RISCV_priv_spec:
-          priv.major = parse_uleb128(&buf, end);
-          total_check++;
-          break;
-
-        case Tag_RISCV_priv_spec_minor:
-          priv.minor = parse_uleb128(&buf, end);
-          total_check++;
           break;
 
         /* Simply ignore other tags.  */
+        case Tag_RISCV_priv_spec:
+        case Tag_RISCV_priv_spec_minor:
         case Tag_RISCV_priv_spec_revision:
         case Tag_RISCV_unaligned_access:
           continue;
@@ -486,13 +472,6 @@ parse_riscv_attributes(const char* buf, const char* end)
         default:
           REJECT("Unknown RISCV Attribute Tag %lu\n", tag);
           continue;
-        }
-
-      if (total_check == 3)
-        {
-          if (riscv_priv_spec_compatible(&priv))
-            return 0;
-          break;
         }
     }
   return ENOEXEC;
