@@ -68,8 +68,7 @@ static const char
   return (const char *)s;
 }
 
-char
-parse_byte(const char** buf, const char* end)
+static inline char parse_byte(const char** buf, const char* end)
 {
   const char ch = **buf;
 
@@ -79,8 +78,7 @@ parse_byte(const char** buf, const char* end)
   return ch;
 }
 
-unsigned int
-parse_uint32le(const char** buf, const char* end)
+static unsigned inline int parse_uint32le(const char** buf, const char* end)
 {
   const unsigned int i = *((const unsigned int*) *buf);
 
@@ -90,8 +88,7 @@ parse_uint32le(const char** buf, const char* end)
   return i;
 }
 
-const char*
-parse_ntbs(const char** buf, const char* end)
+static inline const char* parse_ntbs(const char** buf, const char* end)
 {
   const char* s = (const char*) *buf;
   while (*buf < end && **buf != '\0')
@@ -104,8 +101,7 @@ parse_ntbs(const char** buf, const char* end)
   return s;
 }
 
-unsigned long
-parse_uleb128(const char** buf, const char* end)
+static inline unsigned long parse_uleb128(const char** buf, const char* end)
 {
   unsigned long shift = 0;
   unsigned long value = 0;
@@ -126,8 +122,7 @@ parse_uleb128(const char** buf, const char* end)
   return value;
 }
 
-int
-parse_decimal(const char** s)
+static inline int parse_decimal(const char** s)
 {
   int n = 0;
 
@@ -149,8 +144,7 @@ struct riscv_version
 };
 
 /* Retrieve the version info and move the pointerto the next part.  */
-static bool
-parse_riscv_isa_version(const char** ver)
+static inline bool parse_riscv_isa_version(const char** ver)
 {
   parse_decimal(ver);
 
@@ -172,7 +166,7 @@ skip_underscores(const char **s)
     (*s)++;
 }
 
-static bool
+static inline bool
 riscv_isa_version_backward_compatible(struct riscv_version *elf,
                                       struct riscv_version *host)
 {
@@ -183,7 +177,7 @@ riscv_isa_version_backward_compatible(struct riscv_version *elf,
   return true;
 }
 
-static bool
+static inline bool
 riscv_isa_version_exact_compatible(struct riscv_version *elf,
                                    struct riscv_version *host)
 {
@@ -195,7 +189,7 @@ riscv_isa_version_exact_compatible(struct riscv_version *elf,
 typedef bool (*compat_func_t)(struct riscv_version *elf,
                               struct riscv_version *host);
 
-static bool
+static inline bool
 riscv_isa_version_compatible(const char** elf_ver,
                              const char **host_ver, compat_func_t fn)
 {
@@ -225,11 +219,10 @@ riscv_isa_version_compatible(const char** elf_ver,
 static bool riscv_non_standard_compatible(const char **elf_nse,
                                           const char **host_nse)
 {
-  /* We need more discussion on non-standard extension processing.  */
-  return true;
+  /* We need more discussion on non-standard extension processing.  */ return true;
 }
 
-const char* riscv_extensions = "MAFDQLCBJTPVN";
+static const char* riscv_extensions = "MAFDQLCBJTPVN";
 
 static inline bool
 extension_later_than(char elf_ex, char host_ex)
@@ -250,7 +243,7 @@ reach_extension_end(char host_ex)
   return false;
 }
 
-static bool
+static inline bool
 riscv_extension_compatible(const char** elf_isa,
                            const char **host_isa)
 {
@@ -338,7 +331,7 @@ riscv_extension_compatible(const char** elf_isa,
 }
 
 #define RISCV_NUM_BASE_ISA 4
-static bool
+static inline bool
 riscv_base_isa_compatible(const char** elf_isa, const char **host_isa)
 {
   /* The ISA string must begin with one of these four.  */
@@ -384,7 +377,7 @@ out_invalid_base:
   return false;
 }
 
-static bool
+static inline bool
 riscv_isa_compatible(const char* elf_isa)
 {
   const char *host_isa = GLRO(dl_platform);
@@ -477,8 +470,7 @@ parse_riscv_attributes(const char* buf, const char* end)
   return ENOEXEC;
 }
 
-static int
-parse_legacy_riscv_attributes(const char* buf, const char* end)
+static int parse_legacy_riscv_attributes(const char* buf, const char* end)
 {
   unsigned long tag;
   const char* isa;
