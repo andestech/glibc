@@ -111,7 +111,6 @@ GLIBC_2.29 _IO_ungetc F
 GLIBC_2.29 _IO_unsave_markers F
 GLIBC_2.29 _IO_unsave_wmarkers F
 GLIBC_2.29 _IO_vfprintf F
-GLIBC_2.29 _IO_vfscanf F
 GLIBC_2.29 _IO_vsprintf F
 GLIBC_2.29 _IO_wdefault_doallocate F
 GLIBC_2.29 _IO_wdefault_finish F
@@ -887,6 +886,7 @@ GLIBC_2.29 getc_unlocked F
 GLIBC_2.29 getchar F
 GLIBC_2.29 getchar_unlocked F
 GLIBC_2.29 getcontext F
+GLIBC_2.29 getcpu F
 GLIBC_2.29 getcwd F
 GLIBC_2.29 getdate F
 GLIBC_2.29 getdate_err D 0x4
@@ -1365,8 +1365,10 @@ GLIBC_2.29 posix_madvise F
 GLIBC_2.29 posix_memalign F
 GLIBC_2.29 posix_openpt F
 GLIBC_2.29 posix_spawn F
+GLIBC_2.29 posix_spawn_file_actions_addchdir_np F
 GLIBC_2.29 posix_spawn_file_actions_addclose F
 GLIBC_2.29 posix_spawn_file_actions_adddup2 F
+GLIBC_2.29 posix_spawn_file_actions_addfchdir_np F
 GLIBC_2.29 posix_spawn_file_actions_addopen F
 GLIBC_2.29 posix_spawn_file_actions_destroy F
 GLIBC_2.29 posix_spawn_file_actions_init F

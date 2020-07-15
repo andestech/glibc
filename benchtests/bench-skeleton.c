@@ -163,7 +163,7 @@ main (int argc, char **argv)
 	  json_attr_double (&json_ctx, "mean", d_total_s / d_total_i);
 	}
 
-      if (detailed && !is_bench)
+      if (detailed)
 	{
 	  json_array_begin (&json_ctx, "timings");
 
