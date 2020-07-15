@@ -33,9 +33,9 @@ small:
   const long* lb = (const long*)b;
   long* lend = (long*)((uintptr_t)end & ~msk);
 
-  if (__builtin_expect(la < lend-8, 0))
+  if (__builtin_expect(lend - la >= 9, 0))
   {
-    while (la < lend-8)
+    while (lend - la >= 9)
     {
       long b0 = *lb++;
       long b1 = *lb++;
