@@ -3918,8 +3918,6 @@ enum
 
 #define R_RISCV_NUM		58
 
-#define PT_RISCV_ATTRIBUTE	  0x70000000
-
 /* BPF specific declarations.  */
 
 #define R_BPF_NONE		0	/* No reloc */
