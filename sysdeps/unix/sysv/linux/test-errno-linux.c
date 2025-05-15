@@ -137,7 +137,7 @@ do_test (void)
 {
   fd_set rs, ws, es;
   int status;
-  off_t off;
+  off_t off = 0;
   stack_t ss;
   struct dqblk dqblk;
   struct epoll_event epoll_event;

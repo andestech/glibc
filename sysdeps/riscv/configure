@@ -80,3 +80,30 @@ if test "$libc_cv_static_pie_on_riscv" = yes; then
   printf "%s\n" "#define SUPPORT_STATIC_PIE 1" >>confdefs.h
 
 fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for RISC-V Zbb target attribute support" >&5
+printf %s "checking for RISC-V Zbb target attribute support... " >&6; }
+if test ${libc_cv_compiler_fattribute_zbb+y}
+then :
+  printf %s "(cached) " >&6
+else $as_nop
+  cat > conftest.c <<EOF
+__attribute__((target("arch=+zbb")))
+void foo() {}
+EOF
+libc_cv_compiler_fattribute_zbb=no
+if ${CC-cc} -Werror -c conftest.c -o /dev/null 1>&5 \
+   2>&5 ; then
+  libc_cv_compiler_fattribute_zbb=yes
+fi
+rm -f conftest*
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $libc_cv_compiler_fattribute_zbb" >&5
+printf "%s\n" "$libc_cv_compiler_fattribute_zbb" >&6; }
+if test "$libc_cv_compiler_fattribute_zbb" = yes; then
+  printf "%s\n" "#define HAVE_RISCV_FATTRIBUTE_ZBB 1" >>confdefs.h
+
+fi
+config_vars="$config_vars
+have-fattribute-zbb-support = $libc_cv_compiler_fattribute_zbb"
+

@@ -27,18 +27,39 @@ sysconfdir=$2
 test_wrapper_env=$3
 run_program_env=$4
 
-if ! test -r "${sysconfdir}/ld.so.cache"; then
-    echo "warning: ${sysconfdir}/ld.so.cache does not exist, test skipped"
-    exit 77
-fi
-
 testout="${common_objpfx}elf/tst-ldconfig-p.out"
 # Truncate file.
 : > "$testout"
 
+# create root folder for test item
+testroot="${common_objpfx}elf/tst-ldconfig-p.root"
+cleanup () {
+    rm -rf "$testroot"
+}
+trap cleanup 0
+
+rm -rf "$testroot"
+mkdir -p $testroot/lib $testroot/etc
+
+# Due to the previous operation, recreate the ld.so.cache file in the root folder.
+${test_wrapper_env} \
+${run_program_env} \
+${common_objpfx}elf/ldconfig -X -f /dev/null \
+  -C $testroot/etc/ld.so.cache \
+  $testroot/lib >>"$testout" 2>>"$testout"
+
+sysconfdir="$testroot/etc"
+
+if ! test -r "${sysconfdir}/ld.so.cache"; then
+    echo "warning: ${sysconfdir}/ld.so.cache does not exist, test skipped" >>"$testout"
+    exit 77
+fi
+
+# re-direct the ld.so.cache path to the root folder
 ${test_wrapper_env} \
 ${run_program_env} \
 ${common_objpfx}elf/ldconfig -p \
+  -C $testroot/etc/ld.so.cache \
   $testroot/lib >>"$testout" 2>>"$testout"
 status=$?
 echo "info: ldconfig exit status: $status" >>"$testout"

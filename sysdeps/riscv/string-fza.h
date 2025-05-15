@@ -19,7 +19,25 @@
 #ifndef _RISCV_STRING_FZA_H
 #define _RISCV_STRING_FZA_H 1
 
-#if defined __riscv_zbb || defined __riscv_xtheadbb
+/* Enable use of orc.b if Zbb is available.  */
+#ifndef USE_ZBB_ORCB
+# ifdef __riscv_zbb
+#  define USE_ZBB_ORCB 1
+# else
+#  define USE_ZBB_ORCB 0
+# endif
+#endif
+
+/* Enable use of th.tstnbz if XTheadBb is available.  */
+#ifndef USE_XTHEADBB_TSTNBZ
+# ifdef __riscv_xtheadbb
+#  define USE_XTHEADBB_TSTNBZ 1
+# else
+#  define USE_XTHEADBB_TSTNBZ 0
+# endif
+#endif
+
+#if USE_ZBB_ORCB || USE_XTHEADBB_TSTNBZ
 /* With bitmap extension we can use orc.b to find all zero bytes.  */
 # include <string-misc.h>
 # include <string-optype.h>
@@ -32,7 +50,7 @@ static __always_inline find_t
 find_zero_all (op_t x)
 {
   find_t r;
-#ifdef __riscv_xtheadbb
+#if USE_XTHEADBB_TSTNBZ
   asm ("th.tstnbz %0, %1" : "=r" (r) : "r" (x));
   return r;
 #else

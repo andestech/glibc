@@ -30,6 +30,11 @@
 # define __memrchr MEMRCHR
 #endif
 
+#ifndef __CODEGEN_ATTRIBUTES
+# define __CODEGEN_ATTRIBUTES
+#endif
+
+__CODEGEN_ATTRIBUTES
 void *
 __memrchr (const void *s, int c_in, size_t n)
 {

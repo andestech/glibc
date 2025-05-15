@@ -19,7 +19,25 @@
 #ifndef _STRING_RISCV_FZI_H
 #define _STRING_RISCV_FZI_H 1
 
-#if defined __riscv_zbb || defined __riscv_xtheadbb
+/* Enable use of orc.b if Zbb is available.  */
+#ifndef USE_ZBB_ORCB
+# ifdef __riscv_zbb
+#  define USE_ZBB_ORCB 1
+# else
+#  define USE_ZBB_ORCB 0
+# endif
+#endif
+
+/* Enable use of th.tstnbz if XTheadBb is available.  */
+#ifndef USE_XTHEADBB_TSTNBZ
+# ifdef __riscv_xtheadbb
+#  define USE_XTHEADBB_TSTNBZ 1
+# else
+#  define USE_XTHEADBB_TSTNBZ 0
+# endif
+#endif
+
+#if USE_ZBB_ORCB || USE_XTHEADBB_TSTNBZ
 # include <sysdeps/generic/string-fzi.h>
 #else
 /* Without bitmap clz/ctz extensions, it is faster to direct test the bits

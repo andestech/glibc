@@ -1,0 +1,6 @@
+libriscv_vector {
+  GLIBC_2.35 {
+    __libriscv_vector_version_placeholder;
+  }
+}
+

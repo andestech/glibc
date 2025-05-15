@@ -540,6 +540,9 @@ __mktime64 (struct tm *tp)
      be set as if the tzset() function had been called.  */
   __tzset ();
 
+  if (tp->tm_min < 0 || tp->tm_hour < 0 || tp->tm_mon < 0)
+    return -1;
+
 # if defined _LIBC || NEED_MKTIME_WORKING
   static mktime_offset_t localtime_offset;
   return __mktime_internal (tp, __localtime64_r, &localtime_offset);

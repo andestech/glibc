@@ -29,6 +29,10 @@
 # define __memchr MEMCHR
 #endif
 
+#ifndef __CODEGEN_ATTRIBUTES
+# define __CODEGEN_ATTRIBUTES
+#endif
+
 static __always_inline const char *
 sadd (uintptr_t x, uintptr_t y)
 {
@@ -36,6 +40,7 @@ sadd (uintptr_t x, uintptr_t y)
 }
 
 /* Search no more than N bytes of S for C.  */
+__CODEGEN_ATTRIBUTES
 void *
 __memchr (void const *s, int c_in, size_t n)
 {

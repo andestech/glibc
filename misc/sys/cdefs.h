@@ -433,15 +433,19 @@
 #endif
 
 /* Forces a function to be always inlined.  */
+# ifndef __CODEGEN_ATTRIBUTES
+#  define __CODEGEN_ATTRIBUTES
+# endif
 #if __GNUC_PREREQ (3,2) || __glibc_has_attribute (__always_inline__)
 /* The Linux kernel defines __always_inline in stddef.h (283d7573), and
    it conflicts with this definition.  Therefore undefine it first to
    allow either header to be included first.  */
 # undef __always_inline
-# define __always_inline __inline __attribute__ ((__always_inline__))
+# define __always_inline __inline __attribute__ ((__always_inline__)) \
+   __CODEGEN_ATTRIBUTES
 #else
 # undef __always_inline
-# define __always_inline __inline
+# define __always_inline __inline __CODEGEN_ATTRIBUTES
 #endif
 
 /* Associate error messages with the source location of the call site rather

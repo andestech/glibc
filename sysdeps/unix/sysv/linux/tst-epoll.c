@@ -82,7 +82,7 @@ test_epoll_basic (epoll_wait_check_t epoll_wait_check)
 	    FAIL_EXIT1 ("getppid()=%d != parent=%d", getppid(), parent);
 
 	  errno = 0;
-	  e = epoll_wait_check (efd, &event, 1, 500, &ss);
+	  e = epoll_wait_check (efd, &event, 1, 500000000, &ss);
 	}
       while (e == 0);
 
@@ -98,7 +98,7 @@ test_epoll_basic (epoll_wait_check_t epoll_wait_check)
   xclose (fds[1][1]);
 
   /* Wait some time so child is blocked on the syscall.  */
-  nanosleep (&(struct timespec) {0, 10000000}, NULL);
+  nanosleep (&(struct timespec) {1, 10000000}, NULL);
   TEST_COMPARE (kill (p, SIGUSR1), 0);
 
   int e = epoll_wait_check (efd, &event, 1, 500000000, &ss);

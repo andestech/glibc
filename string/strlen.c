@@ -26,8 +26,13 @@
 # define __strlen STRLEN
 #endif
 
+#ifndef __CODEGEN_ATTRIBUTES
+# define __CODEGEN_ATTRIBUTES
+#endif
+
 /* Return the length of the null-terminated string STR.  Scan for
    the null terminator quickly by testing four bytes at a time.  */
+__CODEGEN_ATTRIBUTES
 size_t
 __strlen (const char *str)
 {

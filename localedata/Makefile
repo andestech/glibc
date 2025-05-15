@@ -57,7 +57,8 @@ test-input := \
   br_FR.UTF-8 \
   bs_BA.UTF-8 \
   ckb_IQ.UTF-8 \
-  cmn_TW.UTF-8 \
+  cmn_TW_1.UTF-8 \
+  cmn_TW_2.UTF-8 \
   crh_UA.UTF-8 \
   cs_CZ.UTF-8 \
   csb_PL.UTF-8 \
@@ -313,7 +314,8 @@ LOCALES := \
   br_FR.UTF-8 \
   bs_BA.UTF-8 \
   ckb_IQ.UTF-8 \
-  cmn_TW.UTF-8 \
+  cmn_TW_1.UTF-8 \
+  cmn_TW_2.UTF-8 \
   crh_UA.UTF-8 \
   cs_CZ.UTF-8 \
   csb_PL.UTF-8 \
