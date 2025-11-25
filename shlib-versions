@@ -68,3 +68,6 @@ libmvec=1
 
 # The malloc debug library
 libc_malloc_debug=0
+
+# The riscv vector library
+libriscv_vector=1

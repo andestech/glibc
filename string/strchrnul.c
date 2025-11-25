@@ -29,7 +29,12 @@
 # define __strchrnul STRCHRNUL
 #endif
 
+#ifndef __CODEGEN_ATTRIBUTES
+# define __CODEGEN_ATTRIBUTES
+#endif
+
 /* Find the first occurrence of C in S or the final NUL byte.  */
+__CODEGEN_ATTRIBUTES
 char *
 __strchrnul (const char *str, int c_in)
 {

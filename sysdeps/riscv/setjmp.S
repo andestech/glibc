@@ -57,6 +57,16 @@ ENTRY (__sigsetjmp)
 	FREG_S fs10,14*SZREG+10*SZFREG(a0)
 	FREG_S fs11,14*SZREG+11*SZFREG(a0)
 #endif
+	la	t1, __has_xandesbf_support
+	lw	t2, 0(t1)
+	beqz	t2, 1f
+	csrr	t4, UMISC_CTL_CSR
+#ifndef __riscv_float_abi_soft
+	REG_S	t4, 14*SZREG+12*SZFREG(a0)
+#else
+	REG_S	t4, 14*SZREG(a0)
+#endif
+1:
 
 #if !IS_IN (libc) && IS_IN (rtld)
   /* In ld.so we never save the signal mask.  */

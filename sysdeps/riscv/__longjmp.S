@@ -49,7 +49,16 @@ ENTRY (__longjmp)
 	FREG_L fs10,14*SZREG+10*SZFREG(a0)
 	FREG_L fs11,14*SZREG+11*SZFREG(a0)
 #endif
-
+	la	t1, __has_xandesbf_support
+	lw	t2, 0(t1)
+	beqz	t2, 1f
+#ifndef __riscv_float_abi_soft
+	REG_L	t4, 14*SZREG+12*SZFREG(a0)
+#else
+	REG_L	t4, 14*SZREG(a0)
+#endif
+	csrw	UMISC_CTL_CSR, t4
+1:
 	seqz a0, a1
 	add  a0, a0, a1   # a0 = (a1 == 0) ? 1 : a1
 	ret

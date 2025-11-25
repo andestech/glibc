@@ -22,6 +22,8 @@
 #include <stdarg.h>
 #include <assert.h>
 
+extern int __has_xandesbf_support;
+
 void
 __makecontext (ucontext_t *ucp, void (*func) (void), int argc,
 	       long int a0, long int a1, long int a2, long int a3, long int a4,
@@ -72,6 +74,14 @@ __makecontext (ucontext_t *ucp, void (*func) (void), int argc,
 	}
 
       va_end (vl);
+    }
+
+  /* Save current CSR_UMISC_CTL to the context if supported */
+  if (__has_xandesbf_support)
+    {
+      unsigned long csr_val;
+      asm volatile ("csrr %0, %1" : "=r"(csr_val) : "i"(UMISC_CTL_CSR));
+      ucp->uc_mcontext.__csr_umisc_ctl = csr_val;
     }
 }
 

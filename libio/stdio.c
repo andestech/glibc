@@ -36,3 +36,4 @@ FILE *stderr = (FILE *) &_IO_2_1_stderr_;
 
 libio_static_fn_required (_IO_file_open);
 libio_static_fn_required (_IO_file_doallocate);
+libio_static_fn_required (_IO_wfile_doallocate);

@@ -82,6 +82,7 @@ typedef struct mcontext_t
   {
     __riscv_mc_gp_state __gregs;
     union  __riscv_mc_fp_state __fpregs;
+    long int __csr_umisc_ctl;
   } mcontext_t;
 
 /* Userlevel context.  */

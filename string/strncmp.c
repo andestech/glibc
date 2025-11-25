@@ -29,6 +29,11 @@
 #define STRNCMP strncmp
 #endif
 
+#ifndef __CODEGEN_ATTRIBUTES
+# define __CODEGEN_ATTRIBUTES
+#endif
+
+__CODEGEN_ATTRIBUTES
 static inline int
 final_cmp (const op_t w1, const op_t w2, size_t n)
 {
@@ -40,6 +45,7 @@ final_cmp (const op_t w1, const op_t w2, size_t n)
 
 /* Aligned loop: if a difference is found, exit to compare the bytes.  Else
    if a zero is found we have equal strings.  */
+__CODEGEN_ATTRIBUTES
 static inline int
 strncmp_aligned_loop (const op_t *x1, const op_t *x2, op_t w1, size_t n)
 {
@@ -64,6 +70,7 @@ strncmp_aligned_loop (const op_t *x1, const op_t *x2, op_t w1, size_t n)
    the bytes so that we can also apply the has_zero test to see if we have
    already reached EOS.  If we have, then we can simply fall through to the
    final comparison.  */
+__CODEGEN_ATTRIBUTES
 static inline int
 strncmp_unaligned_loop (const op_t *x1, const op_t *x2, op_t w1, uintptr_t ofs,
 			size_t n)
@@ -110,6 +117,7 @@ strncmp_unaligned_loop (const op_t *x1, const op_t *x2, op_t w1, uintptr_t ofs,
    returning less than, equal to or greater than zero
    if S1 is lexicographically less than, equal to or
    greater than S2.  */
+__CODEGEN_ATTRIBUTES
 int
 STRNCMP (const char *p1, const char *p2, size_t n)
 {

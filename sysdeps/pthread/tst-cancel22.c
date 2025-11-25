@@ -44,7 +44,7 @@ tf (void *arg)
 
   for (int i = 0; i < 10; ++i)
     {
-      struct timespec ts = { .tv_sec = 0, .tv_nsec = 100000000 };
+      struct timespec ts = { .tv_sec = 0, .tv_nsec = 500000000 };
       TEMP_FAILURE_RETRY (nanosleep (&ts, &ts));
     }
 

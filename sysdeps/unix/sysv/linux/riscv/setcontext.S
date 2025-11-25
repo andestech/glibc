@@ -45,6 +45,19 @@ LEAF (__setcontext)
 
 	cfi_def_cfa (t0, 0)
 
+	/* Restore CSR_UMISC_CTL */
+	la	t2, __has_xandesbf_support
+	lw	t3, 0(t2)
+	beqz	t3, 1f
+#if __riscv_xlen == 64
+	ld	t4, MCONTEXT_CSR_UMISC_CTL(t0)
+#else
+	lw	t4, MCONTEXT_CSR_UMISC_CTL(t0)
+#endif
+
+	csrw	UMISC_CTL_CSR, t4
+1:
+
 #ifndef __riscv_float_abi_soft
 	lw	t1, MCONTEXT_FSR(t0)
 

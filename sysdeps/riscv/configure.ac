@@ -43,3 +43,21 @@ EOF
 if test "$libc_cv_static_pie_on_riscv" = yes; then
   AC_DEFINE(SUPPORT_STATIC_PIE)
 fi
+
+dnl Test if we have Zbb via function attributes
+AC_CACHE_CHECK([for RISC-V Zbb target attribute support],
+		libc_cv_compiler_fattribute_zbb, [dnl
+cat > conftest.c <<EOF
+__attribute__((target("arch=+zbb")))
+void foo() {}
+EOF
+libc_cv_compiler_fattribute_zbb=no
+if ${CC-cc} -Werror -c conftest.c -o /dev/null 1>&AS_MESSAGE_LOG_FD \
+   2>&AS_MESSAGE_LOG_FD ; then
+  libc_cv_compiler_fattribute_zbb=yes
+fi
+rm -f conftest*])
+if test "$libc_cv_compiler_fattribute_zbb" = yes; then
+  AC_DEFINE(HAVE_RISCV_FATTRIBUTE_ZBB)
+fi
+LIBC_CONFIG_VAR([have-fattribute-zbb-support], [$libc_cv_compiler_fattribute_zbb])

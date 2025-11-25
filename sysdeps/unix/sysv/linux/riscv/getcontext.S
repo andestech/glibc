@@ -58,6 +58,19 @@ LEAF (__getcontext)
 	sw	a1, MCONTEXT_FSR(a0)
 #endif /* __riscv_float_abi_soft */
 
+	/* Save CSR_UMISC_CTL if supported */
+	la	t1, __has_xandesbf_support
+	lw	t2, 0(t1)
+	beqz	t2, 1f
+	csrr	t4, UMISC_CTL_CSR
+#if __riscv_xlen == 64
+	sd	t4, MCONTEXT_CSR_UMISC_CTL(a0)
+#else
+	sw	t4, MCONTEXT_CSR_UMISC_CTL(a0)
+#endif
+
+1:
+
 /* rt_sigprocmask (SIG_BLOCK, NULL, &ucp->uc_sigmask, _NSIG8) */
 	li	a3, _NSIG8
 	add     a2, a0, UCONTEXT_SIGMASK

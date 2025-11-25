@@ -63,4 +63,6 @@ symbol:						\
 /* Stack alignment.  */
 #define ALMASK	~15
 
+#define UMISC_CTL_CSR 0x813
+
 #endif /* sys/asm.h */

@@ -27,5 +27,6 @@ STACK_FLAGS			stack (ss_flags)
 
 MCONTEXT_GREGS			mcontext (__gregs)
 MCONTEXT_FPREGS			mcontext (__fpregs)
+MCONTEXT_CSR_UMISC_CTL		mcontext (__csr_umisc_ctl)
 
 UCONTEXT_SIZE			sizeof (ucontext_t)
